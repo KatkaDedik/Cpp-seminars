@@ -2,17 +2,27 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-#include  <iomanip>
+#include <iomanip>
+#include <array>
+#include <functional>
+
+class integer_number;
+
+std::vector<uint32_t> subtract(const integer_number& first, const integer_number& second);
+std::vector<uint32_t> add(const integer_number& first, const integer_number& second);
 
 class integer_number {
 
 	std::vector<uint32_t> data;
+	bool sign;
+	static const std::array<std::array<std::function<integer_number(const integer_number&, const integer_number&)>, 2>, 2> sign_table;
 
 public:
 	integer_number(int num) {
 		data.push_back(std::abs(num));
+		sign = num < 0;
 	}
-	integer_number(std::vector<uint32_t> v) : data(v) {}
+	integer_number(std::vector<uint32_t> v, bool s) : data(v), sign(s) {}
 
 	size_t size()const { return data.size(); }
 
@@ -30,46 +40,33 @@ public:
 		}
 	}
 
+	static integer_number table_function_pp(const integer_number& first, const integer_number& second) {
+		return integer_number(add(first, second), true);
+	}
+	static integer_number table_function_pn(const integer_number& first, const integer_number& second) {
+		if (first > second) {
+			return integer_number(subtract(first, second), true);
+		}
+		return integer_number(subtract(second, first), false);
+	}
+	static integer_number table_function_np(const integer_number& first, const integer_number& second) {
+		if (first < second) {
+			return integer_number(subtract(second, first), true);
+		}
+		return integer_number(subtract(first, second), false);
+	}
+	static integer_number table_function_nn(const integer_number& first, const integer_number& second) {
+		return integer_number(add(first, second), false);
+	}
+
 	integer_number operator+(const integer_number& num) const
 	{
-		size_t index = 0;
-		std::vector<uint32_t> ret;
-		bool carry = 0;
-		while (index < data.size() || index < num.size() || carry) {
-
-			uint64_t left = get(index);
-			uint64_t right = num.get(index);
-
-			uint64_t value = left + right + carry;
-
-			ret.push_back(value & 0xffffffff);
-			carry = value >> 32;
-			index++;
-		}
-		return integer_number(ret);
+		return integer_number(sign_table[sign][num.sgn()](*this, num));
 	}
 
 	integer_number operator-(const integer_number& num) const
 	{
-
-		if (*this < num) {
-			return integer_number(0);
-		}
-
-		size_t index = 0;
-		std::vector<uint32_t> ret;
-		bool carry = 0;
-		while (index < data.size()) {
-
-			uint64_t left = get(index);
-			uint64_t right = num.get(index);
-			uint64_t value = (left | 0x100000000) - (right + carry);
-
-			ret.push_back(value & 0xffffffff);
-			carry = !(value >> 32);
-			index++;
-		}
-		return integer_number(ret);
+		return integer_number(sign_table[sign][!num.sgn()](*this, num));
 	}
 
 	integer_number multiply(uint32_t num, size_t offset) const {
@@ -93,8 +90,12 @@ public:
 		if (overflow > 0) {
 			ret.push_back(overflow);
 		}
-		return ret;
+		return integer_number(ret, false);
 	}
+	
+	integer_number power(int) const {}
+
+	bool sgn() const { return sign; }
 
 	integer_number operator*(const integer_number& num) const 
 	{
@@ -103,6 +104,7 @@ public:
 			integer_number temp = multiply(num.get(i), i);
 			ret = ret + temp;
 		}
+		if (sign ^ num.sgn()) { return -ret; }
 		return ret;
 	}
 
@@ -144,6 +146,12 @@ public:
 	}
 
 	bool operator<=(const integer_number& num) const { return !(*this > num); }
+
+	integer_number& operator-() 
+	{ 
+		sign = !sign; 
+		return *this;
+	}
 };
 
 
@@ -215,4 +223,3 @@ protected:
 	bool get_sign() const { return sign; }
 
 };
-
