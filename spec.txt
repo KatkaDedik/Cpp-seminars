@@ -1,0 +1,47 @@
+  1 This assignment will be about numbers: your goal will be to
+  2 implement a class, ‹number›, which represents a real number with an
+  3 arbitrary number of digits (also known as an ‘arbitrary precision’
+  4 number). The class should have operators for addition, subtraction,
+  5 multiplication, division and comparisons, as well as unary minus.
+  6
+  7 Additionally, add ‹power( int )› and ‹sqrt( int )› as ‹const›
+  8 methods. The argument to ‹power› is the exponent. The argument of
+  9 ‹sqrt› gives the number of «decimal» digits that should be exact in
+ 10 the result (see also below).
+ 11
+ 12 The constructor of ‹number› takes a single integer argument and
+ 13 constructs an instance of ‹number› with the argument as its value
+ 14 (this constructor should allow implicit conversions from ‹int›). A
+ 15 default-constructed ‹number› should be 0.
+ 16
+ 17 As an example, all of the following should be valid code:
+ 18
+ 19     number a( 10 ), b( 25 );
+ 20     number c = a + b;
+ 21     number d = c / a;
+ 22     number e = d * a;
+ 23     assert( e == a + b );
+ 24     assert( e != a );
+ 25     assert( c > a );
+ 26     assert( a < b );
+ 27     assert( c.power( 2 ) > c );
+ 28     c = number( 10 ).power( -5 );
+ 29     assert( c > c.power( 2 ) );
+ 30
+ 31 The decimal digits supplied to ‹sqrt› should be interpreted as
+ 32 follows:
+ 33
+ 34     number s = number( 145 ).sqrt( 3 ); /* 3 fractional digits */
+ 35     /* the exact result rounded to 3 fractional places is 12.042 */
+ 36     number lower = number( 120415 ) * number( 10 ).power( -4 );
+ 37     number upper = number( 120425 ) * number( 10 ).power( -4 );
+ 38     assert( s > lower );
+ 39     assert( s < upper );
+ 40
+ 41 Or in other words, if your result is (single) rounded to the given
+ 42 number of decimal places, it must agree in all those decimal places
+ 43 with a correctly rounded exact result.
+ 44
+ 45 Division by zero and square roots of negative numbers are undefined.
+ 46
+ 47 PS: A reference solution is about 250 lines of not very dense code.

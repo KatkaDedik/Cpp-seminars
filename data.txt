@@ -1,0 +1,190 @@
+  1 /* We will go back to a bit of geometry, this time with circles and
+  2  * lines: in this exercise, we will be interested in planar
+  3  * intersections. We will consider two objects to intersect when
+  4  * they have at least one common point. On the C++ side, we will use
+  5  * a bit of a trick with ‹virtual› method overloading (in a slightly
+  6  * more general setting, the trick is known as the «visitor
+  7  * pattern»). */
+  8
+  9 #include <cmath>
+ 10 #include <cassert>
+ 11 #include <tuple>
+ 12
+ 13 /* First some definitions: the familiar ‹point›. */
+ 14
+ 15 using point = std::pair< double, double >;
+ 16
+ 17 /* Check whether two floating-point numbers are 'essentially' the
+ 18  * same’ (i.e. fuzzy equality). */
+ 19
+ 20 bool close( double a, double b )
+ 21 {
+ 22     return std::fabs( a - b ) < 1e-10;
+ 23 }
+ 24
+ 25 /* We will need to use forward declarations in this exercise, since
+ 26  * methods of the base class will refer to the derived types. */
+ 27
+ 28 struct circle;
+ 29 struct line;
+ 30
+ 31 /* These two helper functions are already defined in this file and
+ 32  * may come in useful (like the ‹slope› class above). */
+ 33
+ 34 double dist( point, point );
+ 35 double dist( const line &, point );
+ 36
+ 37 /* A helper class which is constructed from two points. Two
+ 38  * instances of ‹slope› compare equal if the slopes of the two lines
+ 39  * passing through the respective point pairs are the same. */
+ 40
+ 41 struct slope : std::pair< double, double >
+ 42 {
+ 43     slope( point p, point q )
+ 44         : point( ( q.first  - p.first  ) / dist( p, q ),
+ 45                  ( q.second - p.second ) / dist( p, q ) )
+ 46     {}
+ 47
+ 48     bool operator==( const slope &o ) const
+ 49     {
+ 50         auto [ px, py ] = *this;
+ 51         auto [ qx, qy ] = o;
+ 52
+ 53         return ( close( px, qx ) && close( py, qy ) ) ||
+ 54                ( close( px, -qx ) && close( py, -qy ) );
+ 55     }
+ 56
+ 57     bool operator!=( const slope &o ) const
+ 58     {
+ 59         return !( *this == o );
+ 60     }
+ 61 };
+ 62
+ 63 /* Now we can define the class ‹object›, which will have a ‹virtual›
+ 64  * method ‹intersects› with two overloads: one that accepts a
+ 65  * ‹const› reference to a ‹circle› and another that accepts a
+ 66  * ‹const› reference to a ‹line›. */
+ 67
+ 68 class object;
+ 69
+ 70 /* Put definitions of the classes ‹circle› and ‹line› here. A
+ 71  * ‹circle› is given by a ‹point› and a radius (‹double›), while a
+ 72  * ‹line› is given by two points. NB. Make the ‹line› attributes
+ 73  * ‹public› and name them ‹p› and ‹q› to make the ‹dist› helper
+ 74  * function work. */
+ 75
+ 76 struct circle; /* ref: 18 lines */
+ 77 struct line;   /* ref: 18 lines */
+ 78
+ 79 /* Definitions of the helper functions. */
+ 80
+ 81 double dist( point p, point q )
+ 82 {
+ 83     auto [ px, py ] = p;
+ 84     auto [ qx, qy ] = q;
+ 85     return std::sqrt( std::pow( px - qx, 2 ) +
+ 86                       std::pow( py - qy, 2 ) );
+ 87 }
+ 88
+ 89 double dist( const line &l, point p )
+ 90 {
+ 91     auto [ x2, y2 ] = l.q;
+ 92     auto [ x1, y1 ] = l.p;
+ 93     auto [ x0, y0 ] = p;
+ 94
+ 95     return std::fabs( ( y2 - y1 ) * x0 - ( x2 - x1 ) * y0 +
+ 96                       x2 * y1 - y2 * x1 ) /
+ 97            dist( l.p, l.q );
+ 98 }
+ 99
+100 int main()
+101 {
+102     circle c_unit( { 0, 0 }, 1 ),
+103            c_shifted( { 1, 0 }, 1 ),
+104            c_big( { 0, 0 }, 2 ),
+105            c_distant( { 3, 0 }, 1 ),
+106            c_touchy( { 3, 0 }, 2 );
+107
+108     line l1( { 0, 0 }, { 1, 0 } ),     // horizontal
+109          l2( { 1, 0 }, { 1, 1 } ),     // vertical at x = 1
+110          l3( { 0.5, 0 }, { 0.5, 1 } ), // vertical at x = 0.5
+111          l4( { 4, 0 }, { 4, 1 } ),     // vertical at x = 4
+112          l5( { 0, 0 }, { 1, 1 } ),     // at 45° angle through [0, 0]
+113          l6( { 1, 0 }, { 2, 1 } );     // at 45° angle through [1, 0]
+114
+115     /* circles vs circles */
+116
+117     assert(  c_unit.intersects( c_unit ) );
+118
+119     assert(  c_unit.intersects( c_shifted ) );
+120     assert(  c_shifted.intersects( c_unit ) );
+121     assert( !c_unit.intersects( c_big ) );
+122     assert( !c_big.intersects( c_unit ) );
+123     assert(  c_shifted.intersects( c_big ) );
+124     assert(  c_big.intersects( c_shifted ) );
+125
+126     assert( !c_unit.intersects( c_distant ) );
+127     assert( !c_distant.intersects( c_unit ) );
+128     assert(  c_unit.intersects( c_touchy ) );
+129     assert(  c_touchy.intersects( c_unit ) );
+130     assert( !c_distant.intersects( c_touchy ) );
+131     assert( !c_touchy.intersects( c_distant ) );
+132
+133     /* lines vs lines */
+134
+135     assert(  l1.intersects( l1 ) );
+136
+137     /* vertical intersects horizontal */
+138     assert(  l1.intersects( l2 ) &&  l2.intersects( l1 ) );
+139
+140     /* distinct verticals do not intersect */
+141     assert( !l2.intersects( l3 ) && !l3.intersects( l2 ) );
+142     assert( !l2.intersects( l4 ) && !l4.intersects( l2 ) );
+143
+144     /* the diagonal line intersects all the vertical/horizontal */
+145     assert( l5.intersects( l1 ) );
+146     assert( l5.intersects( l2 ) );
+147     assert( l5.intersects( l3 ) );
+148     assert( l5.intersects( l4 ) );
+149
+150     assert( !l6.intersects( l5 ) && !l5.intersects( l6 ) );
+151
+152     /* circles vs lines */
+153
+154     assert( l1.intersects( c_unit ) );
+155     assert(  c_unit.intersects( l1 ) );
+156     assert(  c_unit.intersects( l2 ) );
+157     assert(  c_unit.intersects( l3 ) );
+158     assert( !c_unit.intersects( l4 ) );
+159     assert(  c_unit.intersects( l5 ) );
+160     assert(  c_unit.intersects( l6 ) );
+161
+162     assert(  c_shifted.intersects( l1 ) );
+163     assert(  c_shifted.intersects( l2 ) );
+164     assert(  c_shifted.intersects( l3 ) );
+165     assert( !c_shifted.intersects( l4 ) );
+166     assert(  c_shifted.intersects( l5 ) );
+167     assert(  c_shifted.intersects( l6 ) );
+168
+169     assert(  c_big.intersects( l1 ) );
+170     assert(  c_big.intersects( l2 ) );
+171     assert(  c_big.intersects( l3 ) );
+172     assert( !c_big.intersects( l4 ) );
+173     assert(  c_big.intersects( l5 ) );
+174     assert(  c_big.intersects( l6 ) );
+175
+176     assert(  c_distant.intersects( l1 ) );
+177     assert( !c_distant.intersects( l2 ) );
+178     assert( !c_distant.intersects( l3 ) );
+179     assert(  c_distant.intersects( l4 ) );
+180     assert( !c_distant.intersects( l5 ) );
+181     assert( !c_distant.intersects( l6 ) );
+182
+183     assert(  c_touchy.intersects( l1 ) );
+184     assert(  c_touchy.intersects( l2 ) );
+185     assert( !c_touchy.intersects( l3 ) );
+186     assert(  c_touchy.intersects( l4 ) );
+187     assert( !c_touchy.intersects( l5 ) );
+188     assert(  c_touchy.intersects( l6 ) );
+189 }
+						   
