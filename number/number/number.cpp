@@ -2,6 +2,15 @@
 
 /*---------------------------NO MEMBRE FUNCTIONS---------------------------*/
 
+void remove_zeros(std::vector<uint32_t>& data) {
+	for (size_t i = data.size() - 1; i > 0; --i) {
+		if (data[i] != 0) {
+			break;
+		}
+		data.pop_back();
+	}
+}
+
 std::vector<uint32_t> add(const integer_number& first, const integer_number& second)
 {
 	size_t index = 0;
@@ -40,14 +49,6 @@ std::vector<uint32_t> subtract(const integer_number& first, const integer_number
 	return ret;
 }
 
-void remove_zeros(std::vector<uint32_t>& data) {
-	for (size_t i = data.size() - 1; i > 0; --i) {
-		if (data[i] != 0) {
-			break;
-		}
-		data.pop_back();
-	}
-}
 
 /*---------------------------INTEGER_NUMBER---------------------------*/
 
@@ -68,25 +69,33 @@ void integer_number::print() const {
 	}
 }
 
-integer_number integer_number::table_function_nn(const integer_number& first, const integer_number& second) {
+integer_number integer_number::table_function_nn(const integer_number& first, const integer_number& second) 
+{
+	// both negative, -first -second = -(first + second)
 	return integer_number(add(first, second), true);
 }
 
-integer_number integer_number::table_function_np(const integer_number& first, const integer_number& second) {
-	if (first > second) {
-		return integer_number(subtract(first, second), true);
+integer_number integer_number::table_function_np(const integer_number& first, const integer_number& second) 
+{
+	// first negativ, second positive, -first +second 
+	if (first.abs_cmp(second) == 1) {
+		return integer_number(subtract(first, second), true);	// |first| > |second| -> -(first - second)
 	}
-	return integer_number(subtract(second, first), false);
+	return integer_number(subtract(second, first), false);		// |first| <= |second| -> +(second - first)
 }
 
-integer_number integer_number::table_function_pn(const integer_number& first, const integer_number& second) {
-	if (first < second) {
-		return integer_number(subtract(second, first), true);
+integer_number integer_number::table_function_pn(const integer_number& first, const integer_number& second) 
+{
+	// first positive, second negativ, +first -second 
+	if (first.abs_cmp(second) != -1 ) {
+		return integer_number(subtract(first, second), false);	// |first| >= |second| -> +(first - second) 
 	}
-	return integer_number(subtract(first, second), false);
+	return integer_number(subtract(second, first), true);		// |first| < |second| -> -(second - first)
 }
 
-integer_number integer_number::table_function_pp(const integer_number& first, const integer_number& second) {
+integer_number integer_number::table_function_pp(const integer_number& first, const integer_number& second) 
+{
+	// both positive, first + second = +(first + second)
 	return integer_number(add(first, second), false);
 }
 

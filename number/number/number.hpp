@@ -29,10 +29,10 @@ public:
 	uint32_t get(int index) const;
 	void print() const;
 
-	static integer_number table_function_nn(const integer_number& first, const integer_number& second);
-	static integer_number table_function_np(const integer_number& first, const integer_number& second);
-	static integer_number table_function_pn(const integer_number& first, const integer_number& second);
-	static integer_number table_function_pp(const integer_number& first, const integer_number& second);
+	static integer_number table_function_nn(const integer_number& first, const integer_number& second); // -  -
+	static integer_number table_function_np(const integer_number& first, const integer_number& second); // -  +
+	static integer_number table_function_pn(const integer_number& first, const integer_number& second); // +  -
+	static integer_number table_function_pp(const integer_number& first, const integer_number& second); // +  +
 
 	integer_number multiply(uint32_t num, size_t offset) const;
 	integer_number devide(const uint32_t& denominator, int offset) const;
