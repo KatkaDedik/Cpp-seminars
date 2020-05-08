@@ -92,7 +92,7 @@ public:
 		}
 		return integer_number(ret, false);
 	}
-	
+
 	integer_number power(int) const {}
 
 	bool sgn() const { return sign; }
@@ -108,44 +108,63 @@ public:
 		return ret;
 	}
 
-	bool operator==(const integer_number& num) const {
-		if (data.size() != num.size()) {
-			return false;
+	/* -1 this < num	0 this == num	1 this > num */
+	int cmp(const integer_number& num)const {
+		if (!sign && num.sgn()) {
+			return 1;
 		}
-
-		for (size_t i = 0; i < data.size(); i++) {
-			if (data[i] != num.get(i)) {
-				return false;
+		if (sign && !num.sgn()) {
+			return -1;
+		}
+		if (sign && num.sgn()) {
+			if (data.size() > num.size()) {
+				return -1;
+			}
+			for (size_t i = 0; i < data.size(); i++) {
+				if (data[i] > num.get(i)) {
+					return -1;
+				}
+				if (data[i] < num.get(i)) {
+					return 1;
+				}
 			}
 		}
-		return true;
+		if (!sign && !num.sgn()) {
+			for (size_t i = 0; i < data.size(); i++) {
+				if (data.size() < num.size()) {
+					return -1;
+				}
+
+				if (data[i] > num.get(i)) {
+					return 1;
+				}
+				if (data[i] < num.get(i)) {
+					return -1;
+				}
+			}
+		}
+		
+		return 0;
 	}
 
+	bool operator==(const integer_number& num) const {
+		return cmp(num) == 0;
+	}
 	bool operator!=(const integer_number& num) const {
-		return !(*this == num);
+		return cmp(num) != 0;
 	}
 
 	bool operator>(const integer_number& num) const {
-		if (data.size() < num.size()) {
-			return false;
-		}
-		for (int i = data.size() - 1; i >= 0; i--) {
-			if (data[i] == num.get(i)) {
-				continue;
-			}
-			return data[i] > num.get(i);
-		}
-		return false;
+		return cmp(num) == 1;
 	}
 
-	bool operator>=(const integer_number& num) const { return *this > num || *this == num;  }
+	bool operator>=(const integer_number& num) const { return cmp(num) != -1; }
 
 	bool operator<(const integer_number& num) const {
-
-		return !(*this >= num);
+		return cmp(num) == -1;
 	}
 
-	bool operator<=(const integer_number& num) const { return !(*this > num); }
+	bool operator<=(const integer_number& num) const { return cmp(num) != 1; }
 
 	integer_number& operator-() 
 	{ 

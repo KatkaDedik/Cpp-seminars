@@ -3,6 +3,14 @@
 const std::array<std::array<std::function<integer_number(const integer_number&, const integer_number&)>, 2>, 2>
 integer_number::sign_table = { table_function_pp , table_function_pn , table_function_np , table_function_nn };
 
+void remove_zeros(std::vector<uint32_t>& data) {
+	for (size_t i = data.size() - 1; i > 0; --i) {
+		if (data[i] != 0) {
+			break;
+		}
+		data.pop_back();
+	}
+}
 
 std::vector<uint32_t> add(const integer_number& first, const integer_number& second)
 {
@@ -39,6 +47,7 @@ std::vector<uint32_t> subtract(const integer_number& first, const integer_number
 		carry = !(value >> 32);
 		index++;
 	}
+	remove_zeros(ret);
 	return ret;
 }
 
@@ -54,14 +63,15 @@ integer_number integer_number::devide(const uint32_t& denominator, int offset) c
 		remainder = (remainder % denominator) << 32;
 	}
 	std::reverse(std::begin(ret), std::end(ret));
-	return integer_number(ret , false);
+	return integer_number(ret , sign);
 }
 
 
 integer_number integer_number::operator/(const integer_number& denominator) const 
 {
 	integer_number remainder = denominator;
-	int offset = data.size() - 1;
+	int offset = denominator.size();
+	offset--;
 	uint32_t quick_divisor = denominator.get(offset);
 	integer_number qoutient = devide(quick_divisor, offset);
 
@@ -74,5 +84,6 @@ integer_number integer_number::operator/(const integer_number& denominator) cons
 	if ((sign ^ denominator.sgn())) {
 		-qoutient;
 	}
+	remove_zeros(qoutient.data);
 	return integer_number(qoutient);
 }

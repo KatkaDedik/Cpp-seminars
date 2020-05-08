@@ -52,7 +52,7 @@ void less_primitive_test() {
 	//assert((big - small) * weed < 0);
 }
 
-void simple_devide() {
+void primitive_devide() {
 
 	std::vector<uint32_t> l;
 	l.push_back(0xffffffff);
@@ -76,11 +76,36 @@ void simple_devide() {
 	assert(long_number.devide(0xface, 0) == expected);
 }
 
+void simple_devide() {
+
+	std::vector<uint32_t> l;
+	l.push_back(0xffffffff);
+	l.push_back(0xffffffff);
+	l.push_back(0xffffffff);
+	//l.push_back(0xffffffff);
+	integer_number long_number(l, false);
+
+	std::vector<uint32_t> osem;
+	osem.push_back(0x88888888);
+	osem.push_back(0x88888888);
+	integer_number osmicky(osem, false);
+	
+	std::vector<uint32_t> e;
+	//e.push_back(0x00000000);
+	e.push_back(0xe0000000);
+	e.push_back(0x10000000);
+	integer_number expected(e, false);
+	assert(long_number / osmicky == expected);
+
+
+}
+
 
 int main()
 {
 	less_primitive_test();
 	primitive_test();
+	primitive_devide();
 	simple_devide();
 
 	std::vector<uint32_t> l;
