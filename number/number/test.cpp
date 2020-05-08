@@ -95,8 +95,37 @@ void simple_devide() {
 	e.push_back(0xe0000000);
 	e.push_back(0x10000000);
 	integer_number expected(e, false);
-	assert(long_number / osmicky == expected);
+	//assert(long_number / osmicky == expected);
 
+	integer_number res2 = long_number.devide(2, 0);
+	assert(long_number / res2 == integer_number(2));
+
+	integer_number res8888 = long_number.devide(0x8888, 0);
+	assert(long_number / res8888 == integer_number(0x8888));
+
+
+	std::vector<uint32_t> smth;
+	smth.push_back(0xff);
+	smth.push_back(0xffffffff);
+	smth.push_back(0xffffffff);
+	smth.push_back(0xffffffff);
+	smth.push_back(0xffffffff);
+	integer_number smth_big(smth, false);
+	integer_number resff = smth_big.devide(0xff, 0);
+	assert(smth_big / resff == integer_number(0xff));
+	
+	integer_number hentai(69);
+
+	integer_number r = smth_big + hentai;
+	assert(smth_big / resff == integer_number(0xff));
+
+	integer_number vn(999999999);
+	integer_number vd(56789);
+	assert(vn / vd == integer_number(17609));
+
+	integer_number video_numerator = integer_number(999999999) * integer_number(100000000);
+	integer_number video_denominator = integer_number(56789) * integer_number(100000000);
+	assert(video_numerator / video_denominator == integer_number(17609));
 
 }
 

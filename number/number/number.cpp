@@ -130,7 +130,8 @@ integer_number integer_number::devide(const uint32_t& denominator, int offset) c
 	for (int i = data.size() - 1; i >= offset; i--) {
 		
 		remainder |= data[i];
-		ret.push_back(remainder / static_cast<uint64_t>(denominator));
+		uint64_t tmp = remainder / static_cast<uint64_t>(denominator);
+		ret.push_back(static_cast<uint32_t>(tmp & 0xffffffff));
 		remainder = (remainder % denominator) << 32;
 	}
 	std::reverse(std::begin(ret), std::end(ret));
@@ -172,18 +173,20 @@ integer_number integer_number::operator*(const integer_number& num) const
 
 integer_number integer_number::operator/(const integer_number& denominator) const 
 {
-	integer_number remainder = denominator;
-	int offset = denominator.size();
-	offset--;
+	int offset = denominator.size() - 1;
 	uint32_t quick_divisor = denominator.get(offset);
 	integer_number qoutient = devide(quick_divisor, offset);
+	integer_number remainder = *this - (qoutient * denominator);
 
-	while (remainder >= denominator) {
+	while (remainder.abs_cmp(denominator) != -1) {
 		remainder = *this - (qoutient * denominator);
 		integer_number qoutient_n = qoutient + remainder.devide(quick_divisor, offset);
 		qoutient = (qoutient + qoutient_n).devide(2, 0);
 	}
 	remainder = *this - (qoutient * denominator);
+	
+	if (remainder.sgn()) { qoutient = qoutient - integer_number(1); }
+	
 	if ((sign ^ denominator.sgn())) {
 		-qoutient;
 	}
@@ -195,7 +198,7 @@ int integer_number::cmp(const integer_number& right)const {
 	bool left_sgn = sign;
 	bool right_sgn = right.sgn();
 
-	if (data.size() == 1 && data.size() == 1 && data[0] == 0 && right == 0) { return true; }
+	if (data.size() == 1 && right.size() == 1 && data[0] == 0 && right == 0) { return true; }
 
 	if (!left_sgn && right_sgn) {
 		return 1;
