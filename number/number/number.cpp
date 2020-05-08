@@ -138,10 +138,24 @@ integer_number integer_number::devide(const uint32_t& denominator, int offset) c
 	return integer_number(ret , sign);
 }
 
-integer_number integer_number::power(int) const 
+integer_number integer_number::power(uint32_t exponent) const 
 { 
-	//TODO
-	return integer_number(0); 
+	bool neg = exponent & 0x1;
+	if (exponent == 0) { return integer_number(1); }
+
+	integer_number tmp = *this;
+	if (tmp.sgn()) { tmp = -tmp; }
+	integer_number res(1);
+	while (exponent != 0) {
+		if (exponent & 0x1) {
+			res = res * tmp;
+		}
+		exponent >>= 1;
+		tmp = tmp * tmp;
+	}
+
+	if (sign && neg) { return -res; }
+	return res; 
 }
 
 integer_number integer_number::operator+(const integer_number& num) const
@@ -173,6 +187,11 @@ integer_number integer_number::operator*(const integer_number& num) const
 
 integer_number integer_number::operator/(const integer_number& denominator) const 
 {
+
+	if (denominator == integer_number(0)) { throw std::logic_error("invalid devide by 0!"); }
+	if (denominator == integer_number(1)) { return *this; }
+	if (*this == denominator) { return integer_number(1); }
+
 	int offset = denominator.size() - 1;
 	uint32_t quick_divisor = denominator.get(offset);
 	integer_number qoutient = devide(quick_divisor, offset);
@@ -185,7 +204,10 @@ integer_number integer_number::operator/(const integer_number& denominator) cons
 	}
 	remainder = *this - (qoutient * denominator);
 	
-	if (remainder.sgn()) { qoutient = qoutient - integer_number(1); }
+	if (remainder.sgn()) { 
+		qoutient = qoutient - integer_number(1); 
+		remainder = remainder + denominator;
+	}
 	
 	if ((sign ^ denominator.sgn())) {
 		-qoutient;
@@ -234,3 +256,4 @@ int integer_number::abs_cmp(const integer_number& right) const {
 }
 
 
+/*---------------------------NUMBER---------------------------*/

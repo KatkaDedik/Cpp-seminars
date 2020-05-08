@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <array>
 #include <functional>
+#include <stdexcept>
 
 class integer_number;
 
@@ -37,7 +38,7 @@ public:
 	integer_number multiply(uint32_t num, size_t offset) const;
 	integer_number devide(const uint32_t& denominator, int offset) const;
 
-	integer_number power(int) const;
+	integer_number power(uint32_t exponent) const;
 	integer_number operator+(const integer_number& num) const;
 	integer_number operator-(const integer_number& num) const;
 	integer_number& operator-();

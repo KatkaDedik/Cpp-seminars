@@ -130,12 +130,26 @@ void simple_devide() {
 }
 
 
+void simple_power_test() {
+
+	integer_number two(2);
+	integer_number ntwo(-2);
+	integer_number twototen(1024);
+	assert(two.power(10) == twototen);
+	assert(ntwo.power(10) == two.power(10));
+	assert(ntwo.power(3) == integer_number(-8));
+	assert((integer_number(1019).power(500) / integer_number(1019).power(500)).power(500) == integer_number(1));
+
+}
+
+
 int main()
 {
 	less_primitive_test();
 	primitive_test();
 	primitive_devide();
 	simple_devide();
+	simple_power_test();
 
 	std::vector<uint32_t> l;
 	l.push_back(0xffffffff);
@@ -146,27 +160,38 @@ int main()
 	integer_number long_number(l, true);
 	integer_number number_one(one, true);
 
-	long_number.print();
-	std::cout << " + ";
-	number_one.print();
-	std::cout << " = ";
+	//long_number.print();
+	//std::cout << " + ";
+	//number_one.print();
+	//std::cout << " = ";
 	integer_number ll = long_number + number_one;
-	ll.print();
+	//ll.print();
 
 	std::vector<uint32_t> vv;
 	vv.push_back(0x0);
 	vv.push_back(0x1);
 	integer_number v(vv, true);
 
-	std::cout << std::endl;
-	v.print();
-	std::cout << " - ";
-	number_one.print();
-	std::cout << " = ";
+	//std::cout << std::endl;
+	//v.print();
+	//std::cout << " - ";
+	//number_one.print();
+	//std::cout << " = ";
 	integer_number sub = v - number_one;
-	sub.print();
+	//sub.print();
 
 	std::cout << std::endl;
 	integer_number tmp = long_number * long_number;
-	tmp.print();
+	//tmp.print();
+
+
+	l.push_back(0xffffffff);
+	integer_number tmp2(l, false);
+	std::vector<uint32_t> face;
+	face.push_back(0xfaceface);
+	face.push_back(0xface);
+	integer_number tmp3(face, false);
+	tmp2.print();
+	tmp3.print();
+	(tmp2 / tmp3).print();
 }
