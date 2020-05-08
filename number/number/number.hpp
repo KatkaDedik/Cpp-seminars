@@ -40,22 +40,22 @@ public:
 		}
 	}
 
-	static integer_number table_function_pp(const integer_number& first, const integer_number& second) {
+	static integer_number table_function_nn(const integer_number& first, const integer_number& second) {
 		return integer_number(add(first, second), true);
 	}
-	static integer_number table_function_pn(const integer_number& first, const integer_number& second) {
+	static integer_number table_function_np(const integer_number& first, const integer_number& second) {
 		if (first > second) {
 			return integer_number(subtract(first, second), true);
 		}
 		return integer_number(subtract(second, first), false);
 	}
-	static integer_number table_function_np(const integer_number& first, const integer_number& second) {
+	static integer_number table_function_pn(const integer_number& first, const integer_number& second) {
 		if (first < second) {
 			return integer_number(subtract(second, first), true);
 		}
 		return integer_number(subtract(first, second), false);
 	}
-	static integer_number table_function_nn(const integer_number& first, const integer_number& second) {
+	static integer_number table_function_pp(const integer_number& first, const integer_number& second) {
 		return integer_number(add(first, second), false);
 	}
 
@@ -152,6 +152,11 @@ public:
 		sign = !sign; 
 		return *this;
 	}
+
+	integer_number devide(const uint32_t& denominator, int offset) const;
+
+	integer_number operator/(const integer_number& denominator) const;
+
 };
 
 
@@ -168,28 +173,13 @@ public:
 
 	number operator+(const number& num) const 
 	{
-		if (sign == num.get_sign()) {
-			if (denominator != num.get_denominator()) {
-				auto n = numerator * num.get_denominator() + denominator * num.get_numerator();
-				auto d = denominator * num.get_denominator();
-				return number(n, d, sign);
-			}
-			auto n = numerator + num.get_numerator();
-			return number(n, denominator, sign);
-		}
-		
-		//else Todo
+		// Todo
 		return number(0);
 	}
 
 	number operator-(const number& num) const {
-		if (denominator != num.get_denominator()) {
-			auto n = numerator * num.get_denominator() - denominator * num.get_numerator();
-			auto d = denominator * num.get_denominator();
-			return number(n, d, true);
-		}
-		auto n = numerator - num.get_numerator();
-		return number(n, denominator, true);
+		// Todo
+		return number(0);
 	}
 
 	number operator-() { sign = !sign; }
@@ -197,12 +187,12 @@ public:
 	number operator*(const number& num) const {
 		auto n = numerator * num.get_numerator();
 		auto d = numerator * num.get_denominator();
-		number(n, d, true);
+		return number(n, d, true);
 	}
 	number operator/(const number& num) const {
 		auto n = numerator * num.get_denominator();
 		auto d = numerator * num.get_numerator();
-		number(n, d, true);
+		return number(n, d, true);
 	}
 
 	bool operator==(const number& num) const {}
