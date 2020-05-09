@@ -41,12 +41,12 @@ public:
 	integer_number power(uint32_t exponent) const;
 	integer_number operator+(const integer_number& num) const;
 	integer_number operator-(const integer_number& num) const;
-	integer_number& operator-();
+	integer_number operator-();
 	integer_number operator*(const integer_number& num) const;
 	integer_number operator/(const integer_number& denominator) const;
 
 	/* -1 this < num	0 this == num	1 this > num */
-	int cmp(const integer_number& num)const;
+	int cmp(const integer_number& right)const;
 
 	bool operator==(const integer_number& num) const { return cmp(num) == 0; }
 	bool operator!=(const integer_number& num) const { return cmp(num) != 0; }
@@ -54,6 +54,7 @@ public:
 	bool operator>=(const integer_number& num) const { return cmp(num) != -1; }
 	bool operator<(const integer_number& num) const { return cmp(num) == -1; }
 	bool operator<=(const integer_number& num) const { return cmp(num) != 1; }
+	void change_sign();
 
 private:
 
@@ -67,51 +68,36 @@ class number {
 
 	integer_number numerator;
 	integer_number denominator = 1;
-	bool sign = true;
 
 public:
 
 	number(int value) : numerator(value) {}
 
-	number operator+(const number& num) const 
-	{
-		// Todo
-		return number(0);
-	}
+	number operator+(const number& num) const;
+	number operator-(const number& num) const;
+	number operator-();
 
-	number operator-(const number& num) const {
-		// Todo
-		return number(0);
-	}
+	number operator*(const number& num) const;
+	number operator/(const number& num) const;
 
-	number operator-() { sign = !sign; }
+	bool operator==(const number& num) const;
+	bool operator!=(const number& num) const;
+	bool operator>(const number& num) const;
+	bool operator>=(const number& num) const;
+	bool operator<(const number& num) const;
+	bool operator<=(const number& num) const;
 
-	number operator*(const number& num) const {
-		auto n = numerator * num.get_numerator();
-		auto d = numerator * num.get_denominator();
-		return number(n, d, true);
-	}
-	number operator/(const number& num) const {
-		auto n = numerator * num.get_denominator();
-		auto d = numerator * num.get_numerator();
-		return number(n, d, true);
-	}
-
-	bool operator==(const number& num) const {}
-	bool operator!=(const number& num) const {}
-	bool operator>(const number& num) const {}
-	bool operator>=(const number& num) const {}
-	bool operator<(const number& num) const {}
-	bool operator<=(const number& num) const {}
+	number power(int exponent) const;
+	number sqrt(int precision) const;
 
 private:
 
-	number(integer_number n, integer_number d, bool s) : numerator(n), denominator(d), sign(s) {}
+	number(integer_number n, integer_number d) : numerator(n), denominator(d) {}
+	int cmp(const number& num) const;
 
 protected:
 
 	integer_number get_numerator() const { return numerator; }
 	integer_number get_denominator() const { return denominator; }
-	bool get_sign() const { return sign; }
 
 };

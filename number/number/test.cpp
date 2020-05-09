@@ -129,7 +129,6 @@ void simple_devide() {
 
 }
 
-
 void simple_power_test() {
 
 	integer_number two(2);
@@ -142,15 +141,7 @@ void simple_power_test() {
 
 }
 
-
-int main()
-{
-	less_primitive_test();
-	primitive_test();
-	primitive_devide();
-	simple_devide();
-	simple_power_test();
-
+void dont_know_test() {
 	std::vector<uint32_t> l;
 	l.push_back(0xffffffff);
 	l.push_back(0xffffffff);
@@ -160,30 +151,29 @@ int main()
 	integer_number long_number(l, true);
 	integer_number number_one(one, true);
 
-	//long_number.print();
-	//std::cout << " + ";
-	//number_one.print();
-	//std::cout << " = ";
+	long_number.print();
+	std::cout << " + ";
+	number_one.print();
+	std::cout << " = ";
 	integer_number ll = long_number + number_one;
-	//ll.print();
+	ll.print();
 
 	std::vector<uint32_t> vv;
 	vv.push_back(0x0);
 	vv.push_back(0x1);
 	integer_number v(vv, true);
 
-	//std::cout << std::endl;
-	//v.print();
-	//std::cout << " - ";
-	//number_one.print();
-	//std::cout << " = ";
+	std::cout << std::endl;
+	v.print();
+	std::cout << " - ";
+	number_one.print();
+	std::cout << " = ";
 	integer_number sub = v - number_one;
-	//sub.print();
+	sub.print();
 
 	std::cout << std::endl;
 	integer_number tmp = long_number * long_number;
-	//tmp.print();
-
+	tmp.print();
 
 	l.push_back(0xffffffff);
 	integer_number tmp2(l, false);
@@ -194,4 +184,44 @@ int main()
 	tmp2.print();
 	tmp3.print();
 	(tmp2 / tmp3).print();
+}
+
+void integer_number_tests() {
+	less_primitive_test();
+	primitive_test();
+	primitive_devide();
+	simple_devide();
+	simple_power_test();
+	//dont_know_test();
+}
+
+void spec_test() {
+	number a(10), b(25);
+	number c = a + b;
+	number d = c / a;
+	number e = d * a;
+	assert(e == a + b);
+	assert(e != a);
+	assert(c > a);
+	assert(a < b);
+	assert(c.power(2) > c);
+	c = number(10).power(-5);
+	assert(c > c.power(2));
+
+	number s = number(145).sqrt(3); /* 3 fractional digits */
+	/* the exact result rounded to 3 fractional places is 12.042 */
+	number lower = number(120415) * number(10).power(-4);
+	number upper = number(120425) * number(10).power(-4);
+	assert(s > lower);
+	assert(s < upper);
+}
+
+void number_tests() {
+	spec_test();
+}
+
+int main()
+{
+	integer_number_tests();
+	number_tests();
 }
