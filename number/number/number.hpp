@@ -72,6 +72,7 @@ class number {
 public:
 
 	number(int value) : numerator(value) {}
+	number() : numerator(0) {}
 
 	number operator+(const number& num) const;
 	number operator-(const number& num) const;
@@ -89,15 +90,19 @@ public:
 
 	number power(int exponent) const;
 	number sqrt(int precision) const;
+	void simplify_sign();
+	bool sgn() const;
 
 private:
 
 	number(integer_number n, integer_number d) : numerator(n), denominator(d) {}
 	int cmp(const number& num) const;
+	
 
 protected:
 
 	integer_number get_numerator() const { return numerator; }
 	integer_number get_denominator() const { return denominator; }
+	
 
 };

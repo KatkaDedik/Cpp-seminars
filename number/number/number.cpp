@@ -214,7 +214,7 @@ integer_number integer_number::operator*(const integer_number& num) const
 	return ret;
 }
 
-integer_number integer_number::operator/(const integer_number& denominator) const 
+/*integer_number integer_number::operator/(const integer_number& denominator) const 
 {
 
 	if (denominator == integer_number(0)) { throw std::logic_error("invalid devide by 0!"); }
@@ -243,6 +243,16 @@ integer_number integer_number::operator/(const integer_number& denominator) cons
 	}
 	remove_zeros(qoutient.data);
 	return integer_number(qoutient);
+}*/
+
+integer_number integer_number::operator/(const integer_number& denominator) const {
+
+	uint32_t upper = data[data.size() - 1] / denominator.get(denominator.size() - 1);
+	uint32_t lower = data[data.size() - 1] / denominator.get(denominator.size() - 1) - 1;
+
+	uint64_t upper_r = data[data.size() - 1] - upper * denominator.get(denominator.size() - 1);
+	uint64_t lower_r = data[data.size() - 1] - lower * denominator.get(denominator.size() - 1);
+	return integer_number(10);
 }
 
 int integer_number::abs_cmp(const integer_number& right) const {
@@ -295,7 +305,7 @@ number number::operator-()
 
 number number::operator*(const number& num) const 
 { 
-	if (num == number(0)) { return 0; }
+	if (num == number(0)) { return number(0); }
 	if (num == number(1)) { return *this; }
 
 	return number(numerator * num.get_numerator(), denominator * num.get_denominator());
@@ -308,21 +318,54 @@ number number::operator/(const number& num) const
 	return number(numerator * num.get_denominator(), denominator * num.get_numerator());
 }
 
-bool number::operator==(const number& num) const 
-{
-	if (denominator == num.get_denominator()) {
-		return numerator == num.get_numerator();
-	}
-	return numerator * num.get_denominator() == denominator * num.get_numerator();
-}
-bool number::operator!=(const number& num) const { return true; }
-bool number::operator>(const number& num) const { return true; }
-bool number::operator>=(const number& num) const { return true; }
-bool number::operator<(const number& num) const { return true; }
-bool number::operator<=(const number& num) const { return true; }
+bool number::operator==(const number& num) const { return cmp(num) == 0; }
+bool number::operator!=(const number& num) const { return cmp(num) != 0; }
+bool number::operator>(const number& num) const { return cmp(num) == 1; }
+bool number::operator>=(const number& num) const { return cmp(num) != -1; }
+bool number::operator<(const number& num) const { return cmp(num) == -1; }
+bool number::operator<=(const number& num) const { return cmp(num) != 1; }
 
-number number::power(int exponent) const { return number(0); }
-number number::sqrt(int precision) const { return number(0); }
+number number::power(int exponent) const 
+{ 
+	if (exponent == 0) { return number(1); }
+	if (exponent == 1) { return *this; }
+	if (exponent == -1) {
+		if (numerator == integer_number(0)) {
+			throw std::logic_error("invalid devide by 0!");
+		}
+		return number(denominator, numerator);
+	}
+	if (exponent < 0) { return number(denominator.power(std::abs(exponent)), numerator.power(std::abs(exponent))); }
+	return number(numerator.power(std::abs(exponent)), denominator.power(std::abs(exponent)));
+}
+number number::sqrt(int precision) const { return number(precision); }
+void number::simplify_sign() 
+{
+	if (((numerator.sgn() && denominator.sgn())
+		|| (!numerator.sgn() && denominator.sgn()))) {
+		numerator.change_sign();
+		denominator.change_sign();
+	}
+}
+bool number::sgn() const {
+	return (numerator.sgn() ^ denominator.sgn());
+}
 int number::cmp(const number& num) const {
-	return 0;
+
+	bool first_sgn = sgn();
+	bool second_sgn = num.sgn();
+
+	if (!first_sgn && second_sgn) { // +first -second => first > second
+		return 1;
+	}
+
+	if (first_sgn && !second_sgn) { // -first +second => first < second
+		return -1;
+	}
+
+	if (denominator == num.get_denominator) {
+		return numerator.cmp(num.get_numerator());
+	}
+
+	return (numerator * num.get_denominator).cmp(num.get_numerator() * denominator);
 }
