@@ -98,10 +98,10 @@ void simple_devide() {
 	//assert(long_number / osmicky == expected);
 
 	integer_number res2 = long_number.devide(2, 0);
-	assert(long_number / res2 == integer_number(2));
+	//assert(long_number / res2 == integer_number(2));
 
 	integer_number res8888 = long_number.devide(0x8888, 0);
-	assert(long_number / res8888 == integer_number(0x8888));
+	//assert(long_number / res8888 == integer_number(0x8888));
 
 
 	std::vector<uint32_t> smth;
@@ -200,7 +200,7 @@ void spec_test() {
 	number c = a + b;
 	number d = c / a;
 	number e = d * a;
-	//assert(e == a + b);
+	assert(e == a + b);
 	assert(e != a);
 	assert(c > a);
 	assert(a < b);
@@ -209,24 +209,57 @@ void spec_test() {
 	assert(c > c.power(2));
 
 	number s = number(145).sqrt(3); /* 3 fractional digits */
+	s.print();
 	/* the exact result rounded to 3 fractional places is 12.042 */
 	number pow_4(10);
 	pow_4 = pow_4.power(-4);
+	pow_4.print();
 	number l(120415);
 	number u(120425);
 	number lower = l * pow_4;
+	lower.print();
 	number upper = u * pow_4;
+	upper.print();
 	assert(s > lower);
 	assert(s < upper);
 }
 
+void sqrt_test() {
+	number(2).sqrt(5).print();
+}
+
 void number_tests() {
 	spec_test();
+	sqrt_test();
 }
+
+
+void new_devide() {
+
+	std::vector<uint32_t> f;
+	f.push_back(0x66666666);
+	f.push_back(0x55555555);
+	f.push_back(0x44444444);
+	f.push_back(0x33333333);
+	f.push_back(0x22222222);
+	f.push_back(0x11111111);
+
+	integer_number numerator(f, false);
+
+	std::vector<uint32_t> d;
+	d.push_back(0xcccccccc);
+	d.push_back(0xffffffff);
+	d.push_back(0x22222222);
+	integer_number denominator(d, false);
+
+	integer_number res = numerator / denominator;
+
+}
+
 
 int main()
 {
-	int k = 69;
-	integer_number_tests();
-	number_tests();
+	new_devide();
+	//nteger_number_tests();
+	//number_tests();
 }

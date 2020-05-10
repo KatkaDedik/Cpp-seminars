@@ -1,150 +1,102 @@
-/* We will go back to a bit of geometry, this time with circles and
- * lines: in this exercise, we will be interested in planar
- * intersections. We will consider two objects to intersect when
- * they have at least one common point. On the C++ side, we will use
- * a bit of a trick with ‹virtual› method overloading (in a slightly
- * more general setting, the trick is known as the «visitor
- * pattern»). */
-#include <cmath>
-#include <cassert>
-#include <tuple>
-/* First some definitions: the familiar ‹point›. */
-using point = std::pair< double, double >;
-/* Check whether two floating-point numbers are 'essentially' the
- * same’ (i.e. fuzzy equality). */
-bool close( double a, double b )
+#ifndef CELLULAR_H
+#define CELLULAR_H
+#include <iostream>
+#include <vector>
+/* The class 'automaton_state' represents the state of a 1D, binary cellular
+ * automaton, extending arbitrarily far into each direction from index 0 (i.e.
+ * both negative and positive indices are valid, and they are valid at all
+ * times). Calling get() or set() must never cause out-of-bounds memory access.
+ * The min_index() and max_index() methods are advisory, but any non-zero cells
+ * must fall within the [min_index(), max_index()] range. */
+class automaton_state
 {
-    return std::fabs( a - b ) < 1e-10;
-}
-/* We will need to use forward declarations in this exercise, since
- * methods of the base class will refer to the derived types. */
-struct circle;
-struct line;
-/* These two helper functions are already defined in this file and
- * may come in useful (like the ‹slope› class above). */
-double dist( point, point );
-double dist( const line &, point );
-/* A helper class which is constructed from two points. Two
- * instances of ‹slope› compare equal if the slopes of the two lines
- * passing through the respective point pairs are the same. */
-struct slope : std::pair< double, double >
-{
-    slope( point p, point q )
-        : point( ( q.first  - p.first  ) / dist( p, q ),
-                 ( q.second - p.second ) / dist( p, q ) )
-    {}
-    bool operator==( const slope &o ) const
-    {
-        auto [ px, py ] = *this;
-        auto [ qx, qy ] = o;
-        return ( close( px, qx ) && close( py, qy ) ) ||
-               ( close( px, -qx ) && close( py, -qy ) );
-    }
-    bool operator!=( const slope &o ) const
-    {
-        return !( *this == o );
+    std::vector<bool> states = {};
+    int minIndex = 1;
+    int maxIndex = -1;
+    /* attributes are up to you */
+public:
+    automaton_state(){} /* construct a state with all cells set to 0 (false) */
+    int min_index() const {return minIndex;} /* lower bound on the indices of non-zero cells */
+    int max_index() const {return maxIndex;} /* upper bound of the same */
+    bool get( int index ) const {
+        if (min_index() <= index && index <= max_index())
+            return states[(unsigned int) (index - min_index())];
+        return false;
+    } /* read a value */
+    void set( int index, bool value ) {
+        if (minIndex > maxIndex && states.size() == 0) {
+            if (value == false)
+                return;
+            states.push_back(false);
+            states.push_back(true);
+            states.push_back(false);
+            maxIndex = index + 1;
+            minIndex = index - 1;
+        }
+        if (value == false) {
+            if (index >= min_index() && index <= max_index())
+                states[(unsigned int) (index - min_index())] = value;
+            return;
+        }
+        if (index < min_index()) {
+            states.insert(states.begin(), (unsigned int)std::abs(index - min_index()) + 1, 0);
+            minIndex = index - 1;
+        }
+        if (index > max_index()) {
+            states.insert(states.end(), (unsigned int) (index - max_index()) + 1, 0);
+            maxIndex = index + 1;
+        }
+        states[(unsigned int) (index - min_index())] = value;
     }
 };
-/* Now we can define the class ‹object›, which will have a ‹virtual›
- * method ‹intersects› with two overloads: one that accepts a
- * ‹const› reference to a ‹circle› and another that accepts a
- * ‹const› reference to a ‹line›. */
-class object;
-/* Put definitions of the classes ‹circle› and ‹line› here. A
- * ‹circle› is given by a ‹point› and a radius (‹double›), while a
- * ‹line› is given by two points. NB. Make the ‹line› attributes
- * ‹public› and name them ‹p› and ‹q› to make the ‹dist› helper
- * function work. */
-struct circle; /* ref: 18 lines */
-struct line;   /* ref: 18 lines */
-/* Definitions of the helper functions. */
-double dist( point p, point q )
+/* 'automaton' class represents the automaton itself. The automaton keeps
+ * its state internally and allows the user to perform simulation on this
+ * internal state. Initially, the state of the automaton is 0 (false)
+ * everywhere. Rules which go from '000' to '1' are forbidden. The rule is
+ * given to the constructor by its Wolfram code. */
+std::vector<bool> toBin(int rule);
+class automaton
 {
-    auto [ px, py ] = p;
-    auto [ qx, qy ] = q;
-    return std::sqrt( std::pow( px - qx, 2 ) +
-                      std::pow( py - qy, 2 ) );
-}
-double dist( const line &l, point p )
-{
-    auto [ x2, y2 ] = l.q;
-    auto [ x1, y1 ] = l.p;
-    auto [ x0, y0 ] = p;
-    return std::fabs( ( y2 - y1 ) * x0 - ( x2 - x1 ) * y0 +
-                      x2 * y1 - y2 * x1 ) /
-           dist( l.p, l.q );
-}
-int main()
-{
-    circle c_unit( { 0, 0 }, 1 ),
-           c_shifted( { 1, 0 }, 1 ),
-           c_big( { 0, 0 }, 2 ),
-           c_distant( { 3, 0 }, 1 ),
-           c_touchy( { 3, 0 }, 2 );
-    line l1( { 0, 0 }, { 1, 0 } ),     // horizontal
-         l2( { 1, 0 }, { 1, 1 } ),     // vertical at x = 1
-         l3( { 0.5, 0 }, { 0.5, 1 } ), // vertical at x = 0.5
-         l4( { 4, 0 }, { 4, 1 } ),     // vertical at x = 4
-         l5( { 0, 0 }, { 1, 1 } ),     // at 45° angle through [0, 0]
-         l6( { 1, 0 }, { 2, 1 } );     // at 45° angle through [1, 0]
-    /* circles vs circles */
-    assert(  c_unit.intersects( c_unit ) );
-    assert(  c_unit.intersects( c_shifted ) );
-    assert(  c_shifted.intersects( c_unit ) );
-    assert( !c_unit.intersects( c_big ) );
-    assert( !c_big.intersects( c_unit ) );
-    assert(  c_shifted.intersects( c_big ) );
-    assert(  c_big.intersects( c_shifted ) );
-    assert( !c_unit.intersects( c_distant ) );
-    assert( !c_distant.intersects( c_unit ) );
-    assert(  c_unit.intersects( c_touchy ) );
-    assert(  c_touchy.intersects( c_unit ) );
-    assert( !c_distant.intersects( c_touchy ) );
-    assert( !c_touchy.intersects( c_distant ) );
-    /* lines vs lines */
-    assert(  l1.intersects( l1 ) );
-    /* vertical intersects horizontal */
-    assert(  l1.intersects( l2 ) &&  l2.intersects( l1 ) );
-    /* distinct verticals do not intersect */
-    assert( !l2.intersects( l3 ) && !l3.intersects( l2 ) );
-    assert( !l2.intersects( l4 ) && !l4.intersects( l2 ) );
-    /* the diagonal line intersects all the vertical/horizontal */
-    assert( l5.intersects( l1 ) );
-    assert( l5.intersects( l2 ) );
-    assert( l5.intersects( l3 ) );
-    assert( l5.intersects( l4 ) );
-    assert( !l6.intersects( l5 ) && !l5.intersects( l6 ) );
-    /* circles vs lines */
-    assert( l1.intersects( c_unit ) );
-    assert(  c_unit.intersects( l1 ) );
-    assert(  c_unit.intersects( l2 ) );
-    assert(  c_unit.intersects( l3 ) );
-    assert( !c_unit.intersects( l4 ) );
-    assert(  c_unit.intersects( l5 ) );
-    assert(  c_unit.intersects( l6 ) );
-    assert(  c_shifted.intersects( l1 ) );
-    assert(  c_shifted.intersects( l2 ) );
-    assert(  c_shifted.intersects( l3 ) );
-    assert( !c_shifted.intersects( l4 ) );
-    assert(  c_shifted.intersects( l5 ) );
-    assert(  c_shifted.intersects( l6 ) );
-    assert(  c_big.intersects( l1 ) );
-    assert(  c_big.intersects( l2 ) );
-    assert(  c_big.intersects( l3 ) );
-    assert( !c_big.intersects( l4 ) );
-    assert(  c_big.intersects( l5 ) );
-    assert(  c_big.intersects( l6 ) );
-    assert(  c_distant.intersects( l1 ) );
-    assert( !c_distant.intersects( l2 ) );
-    assert( !c_distant.intersects( l3 ) );
-    assert(  c_distant.intersects( l4 ) );
-    assert( !c_distant.intersects( l5 ) );
-    assert( !c_distant.intersects( l6 ) );
-    assert(  c_touchy.intersects( l1 ) );
-    assert(  c_touchy.intersects( l2 ) );
-    assert( !c_touchy.intersects( l3 ) );
-    assert(  c_touchy.intersects( l4 ) );
-    assert( !c_touchy.intersects( l5 ) );
-    assert(  c_touchy.intersects( l6 ) );
-}
-		   
+    automaton_state stat;
+    std::vector<bool> rules;
+    /* attributes are up to you */
+public:
+    automaton( int rule ) {rules = toBin(rule);} /* constructs an automaton from a rule number */
+    auto getRule() {return rules;}
+    void reset( const automaton_state &s ) {
+        stat = s;} /* put the automaton into this state */
+    void set( int index, bool value ) {stat.set(index, value);} /* change the cell value at the given index */
+    void step() {
+        automaton_state temp;
+        int pattern = 0;
+        for (int i = stat.min_index(); i <= stat.max_index(); i++) {
+            if (i == stat.min_index()) pattern = 2 * stat.get(i) + stat.get(i + 1);
+            else if (i == stat.max_index()) pattern = 4 * stat.get(i - 1) + 2 * stat.get(i);
+                else pattern = 4 * stat.get((i - 1)) + 2 * stat.get(i) + stat.get((1 + i));
+            temp.set(i - stat.min_index(), rules.at((unsigned int) pattern));
+        }
+        for (int i = stat.min_index(); i <= stat.max_index(); i++) {
+            stat.set(i, temp.get(i - stat.min_index()));
+        }
+        if (stat.get(stat.min_index())) {       //Expand front of vector by 2 if first is True (correction)
+            stat.set(stat.min_index() - 1, true);
+            stat.set(stat.min_index() + 1, false);
+        }
+        if (stat.get(stat.max_index())) {       //Expand end of vector by 2 if last is True (correction)
+            stat.set(stat.max_index() + 1, true);
+            stat.set(stat.max_index() - 1, false);
+        }
+    } /* perform a single computation step */
+    void run( int steps ) {
+        for (int i = 0; i < steps; i++) {
+            step();
+        }
+    } /* compute any number of steps */
+    bool cell( int index ) const {return stat.get(index);}  /* return the current cell value at 'index' */
+    automaton_state state() const {return stat;} /* return the current state */
+};
+/* the 'compute_cell' function takes a rule number, an initial state, the
+ * number of steps and an index into the state; it then returns the state of
+ * the indexed cell after `steps` rounds of computation */
+bool compute_cell( int rule, const automaton_state &start, int steps, int index );
+#endif // CELLULAR_H

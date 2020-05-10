@@ -1,15 +1,16 @@
 #include <cstdint>
 #include <cstdlib>
+#include <iomanip>
 #include <iostream>
 #include <vector>
-#include <iomanip>
 #include <array>
 #include <functional>
 #include <stdexcept>
+#include <tuple>
 
 class integer_number;
 
-std::vector<uint32_t> subtract(const integer_number& first, const integer_number& second);
+std::vector<uint32_t> subtract(const integer_number& first, const integer_number& second, size_t offset);
 std::vector<uint32_t> add(const integer_number& first, const integer_number& second);
 
 class integer_number {
@@ -35,8 +36,9 @@ public:
 	static integer_number table_function_pn(const integer_number& first, const integer_number& second); // +  -
 	static integer_number table_function_pp(const integer_number& first, const integer_number& second); // +  +
 
-	integer_number multiply(uint32_t num, size_t offset) const;
+	integer_number multiply(uint64_t num, size_t offset) const;
 	integer_number devide(const uint32_t& denominator, int offset) const;
+	std::tuple<integer_number, uint32_t> devide_mod(const uint32_t& denominator, int offset) const;
 
 	integer_number power(uint32_t exponent) const;
 	integer_number operator+(const integer_number& num) const;
@@ -54,7 +56,12 @@ public:
 	bool operator>=(const integer_number& num) const { return cmp(num) != -1; }
 	bool operator<(const integer_number& num) const { return cmp(num) == -1; }
 	bool operator<=(const integer_number& num) const { return cmp(num) != 1; }
+	integer_number& operator=(const std::vector<uint32_t>& vec);
 	void change_sign();
+	integer_number get_elements(size_t offset, size_t count) const;
+	integer_number mod(const integer_number& num) const;
+	integer_number gcd(integer_number num) const;
+	integer_number& push_forward(const uint32_t& in);
 
 private:
 
@@ -92,17 +99,19 @@ public:
 	number sqrt(int precision) const;
 	void simplify_sign();
 	bool sgn() const;
+	void print() const;
+	number& simplify();
+
 
 private:
 
 	number(integer_number n, integer_number d) : numerator(n), denominator(d) {}
 	int cmp(const number& num) const;
+	number& abs();
 	
 
 protected:
 
 	integer_number get_numerator() const { return numerator; }
 	integer_number get_denominator() const { return denominator; }
-	
-
 };
