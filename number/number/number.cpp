@@ -143,24 +143,63 @@ integer_number integer_number::devide(const uint32_t& denominator, int offset) c
 	return integer_number(ret , sign);
 }
 
-std::tuple<integer_number, uint32_t> integer_number::devide_mod(const uint32_t& denominator, int offset) const
+std::tuple<integer_number, integer_number> integer_number::devide_mod(const integer_number& denominator) const
 {
-	uint64_t remainder = 0;
-	auto denominator64 = static_cast<uint64_t>(denominator);
-
-	if (denominator64 == 0) {
-		throw std::logic_error("invalid devide by 0!");
-	}
-
+	integer_number numerator = *this;
+	uint64_t numerator_tmp = 0;
+	const uint64_t denominator_tmp = denominator.get(denominator.size() - 1);
+	integer_number numerator_upper_elements = numerator.get_elements(numerator.size(), denominator.size() - 1);
 	std::vector<uint32_t> ret;
-	for (int i = data.size() - 1; i >= offset; i--) {
-		remainder |= data[i];
-		uint64_t tmp = remainder / denominator64;
-		ret.push_back(static_cast<uint32_t>(tmp & 0xffffffff));
-		remainder = (remainder % denominator64) << 32;
+
+	for (int i = static_cast<int>(numerator.size()) - 1; i >= static_cast<int>(denominator.size()) - 1; i--) {
+
+		numerator_upper_elements.push_forward(get(i - (denominator.size() - 1)));
+		uint64_t tmp = numerator_upper_elements.get(denominator.size());
+		numerator_tmp = (tmp << 32) | numerator_upper_elements.get(denominator.size() - 1);
+
+		uint64_t upper_guess = numerator_tmp / denominator_tmp;
+		integer_number upper_x_denominator = denominator.multiply(upper_guess, 0);
+
+		integer_number upper_remainder = numerator_upper_elements - upper_x_denominator;
+
+		if (!upper_remainder.sgn()) {
+
+			numerator_upper_elements = upper_remainder;
+			ret.push_back(upper_guess);
+
+		}
+		else {
+			uint64_t lower_guess = numerator_tmp / (denominator_tmp + 1);
+			integer_number lower_x_denominator = denominator.multiply(lower_guess, 0);
+
+			integer_number lower_remainder = numerator_upper_elements - lower_x_denominator;
+
+			while (lower_remainder.abs_cmp(denominator) == 1) {
+
+				numerator_tmp = lower_remainder.get(lower_remainder.size() - 1);
+
+				upper_guess = numerator_tmp / denominator_tmp;
+				upper_remainder = lower_remainder - denominator.multiply(upper_guess, 0);
+
+				if (!upper_remainder.sgn()) {
+					lower_guess += upper_guess;
+					lower_remainder = upper_remainder;
+				}
+				else {
+					uint32_t lower_guess2 = numerator_tmp / (denominator_tmp + 1);
+					lower_remainder = lower_remainder - denominator.multiply(lower_guess2, 0);
+					lower_guess += lower_guess2;
+				}
+			}
+
+			numerator_upper_elements = lower_remainder;
+			ret.push_back(lower_guess);
+		}
 	}
 	std::reverse(std::begin(ret), std::end(ret));
-	return std::make_pair<integer_number, uint32_t>(integer_number(ret, sign), static_cast<uint32_t>(remainder >> 32));
+	remove_zeros(ret);
+	integer_number res(ret, sign ^ denominator.sgn());
+	return std::make_pair(res, numerator_upper_elements);
 }
 
 integer_number integer_number::power(uint32_t exponent) const 
@@ -187,7 +226,7 @@ int integer_number::cmp(const integer_number& right)const {
 	bool left_sgn = sign;
 	bool right_sgn = right.sgn();
 
-	if (data.size() == 1 && right.size() == 1 && data[0] == 0 && right == 0) { return true; }
+	if (data.size() == 1 && right.size() == 1 && data[0] == 0 && right.get(0) == 0) { return 0; }
 
 	if (!left_sgn && right_sgn) {
 		return 1;
@@ -232,43 +271,9 @@ integer_number integer_number::operator*(const integer_number& num) const
 	return ret;
 }
 
-integer_number integer_number::operator/(const integer_number& denominator) const { //0x22222222 0xffffffff 0xcccccccc
-
-	integer_number numerator = *this; //0x11111111 0x22222222 0x33333333 0x44444444 0x5555555555 0x66666666
-	uint64_t numerator_tmp = 0;
-	const uint64_t denominator_tmp = denominator.get(denominator.size() - 1); //0x22222222
-	integer_number numerator_upper_elements = numerator.get_elements(numerator.size(), denominator.size() - 1); //0x11111111 0x22222222
-	std::vector<uint32_t> ret;
-
-	for (int i = numerator.size() - 1; i >= denominator.size() - 1; i--) {
-
-		numerator_upper_elements.push_forward(get(i - (denominator.size() - 1)));  //0x11111111 0x22222222 0x33333333
-		uint64_t tmp = numerator_upper_elements.get(denominator.size());
-		numerator_tmp = (tmp << 32) | numerator_upper_elements.get(denominator.size() - 1); //0x11111111 0x22222222
-		
-		uint64_t upper_guess = numerator_tmp / denominator_tmp; // 0x00000000 0x11111111 / 0x22222222 => 0
-		integer_number upper_x_denominator = denominator.multiply(upper_guess, 0); // 0x11111111 0x22222222 0x33333333 * 0 = 0
-
-		integer_number upper_tmp = numerator_upper_elements - upper_x_denominator;
-
-		if (!upper_tmp.sgn()) { // numerator_upper_elements - upper_x_denominator >= 0 -> quess was right
-
-			numerator_upper_elements = upper_tmp;
-			ret.push_back(upper_guess);
-
-		}
-		else { // numerator_upper_elements - upper_x_denominator < 0 -> quess was wrong, need to use lower_guess
-			uint64_t lower_guess = numerator_tmp / (denominator_tmp + 1); // 0x00000000 0x11111111 / 0x22222223 => 0
-			integer_number lower_x_denominator = denominator.multiply(lower_guess, 0); // 0x11111111 0x22222222 0x33333333 * 0 = 0
-
-			numerator_upper_elements = numerator_upper_elements - lower_x_denominator;
-			ret.push_back(lower_guess);
-		}
-	}
-
-	std::reverse(std::begin(ret), std::end(ret));
-	remove_zeros(ret);
-	return integer_number(ret, sign ^ denominator.sgn());
+integer_number integer_number::operator/(const integer_number& denominator) const 
+{ 
+	return std::get<0>(devide_mod(denominator));
 }
 
 integer_number& integer_number::push_forward(const uint32_t& in) {
@@ -309,7 +314,11 @@ integer_number integer_number::get_elements(size_t offset, size_t count) const {
 	return integer_number(std::vector<uint32_t>(data.begin() + offset - count, data.begin() + offset), false);
 }
 
-integer_number integer_number::mod(const integer_number& num) const { return integer_number(0); }
+integer_number integer_number::mod(const integer_number& num) const 
+{ 
+	return std::get<1>(devide_mod(num)); 
+}
+
 integer_number integer_number::gcd(integer_number v) const {
 	integer_number zero(0);
 	integer_number u = *this;
@@ -328,8 +337,10 @@ number number::operator+(const number& num) const {
 		integer_number new_numerator = numerator + num.get_numerator();
 		return number(new_numerator, denominator);
 	}
-	integer_number new_numerator = (numerator * num.get_denominator()) + (num.get_numerator() * denominator);
-	return number(new_numerator, denominator * num.get_denominator());
+	number ret((numerator * num.get_denominator()) + (num.get_numerator() * denominator)
+		, denominator * num.get_denominator());
+	ret.simplify();
+	return ret;
 }
 
 number number::operator-(const number& num) const {
@@ -338,7 +349,11 @@ number number::operator-(const number& num) const {
 		return number(new_numerator, denominator);
 	}
 	integer_number new_numerator = (numerator * num.get_denominator()) - (num.get_numerator() * denominator);
-	return number(new_numerator, denominator * num.get_denominator());
+	
+	number ret((numerator * num.get_denominator()) - (num.get_numerator() * denominator)
+		, denominator * num.get_denominator());
+	ret.simplify();
+	return ret;
 }
 
 number number::operator-()
@@ -358,14 +373,16 @@ number number::operator*(const number& num) const
 		return *this; 
 	}
 
-	return number(numerator * num.get_numerator(), denominator * num.get_denominator());
+	number ret(numerator * num.get_numerator(), denominator * num.get_denominator());
+	return ret.simplify();
 }
 
 number number::operator/(const number& num) const 
 { 
 	if (num == number(0)) { throw std::logic_error("invalid devide by 0!"); }
 	if (num == number(1)) { return *this; }
-	return number(numerator * num.get_denominator(), denominator * num.get_numerator());
+	number ret(numerator * num.get_denominator(), denominator * num.get_numerator());
+	return ret.simplify();
 }
 
 bool number::operator==(const number& num) const { return cmp(num) == 0; }
@@ -401,12 +418,12 @@ number number::sqrt(int precision) const
 	number current;
 	number next = *this;
 	number tmp;
-	number precision_number = number(10).power(precision);
+	number precision_number = number(10).power(-precision);
 	do {
 		current = next;
 		next = current / two + *this / (two * current);
 		tmp = (current - next).abs();
-	} while ( tmp < precision_number);
+	} while ( tmp > precision_number);
 	return next; 
 }
 
@@ -458,4 +475,22 @@ void number::print() const {
 	std::cout << std::endl;
 	std::cout << std::endl;
 }
-number& number::simplify() { return *this; }
+
+number& number::simplify() { 
+	
+	integer_number g_c_d;
+
+	simplify_sign();
+
+	if(numerator.abs_cmp(denominator) == 1){
+		g_c_d = numerator.gcd(denominator);
+	}
+	else {
+		g_c_d = denominator.gcd(numerator);
+	}
+
+	numerator = numerator / g_c_d;
+	denominator = denominator / g_c_d;
+	
+	return *this; 
+}

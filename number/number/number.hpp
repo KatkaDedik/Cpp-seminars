@@ -16,10 +16,11 @@ std::vector<uint32_t> add(const integer_number& first, const integer_number& sec
 class integer_number {
 
 	std::vector<uint32_t> data;
-	bool sign;
+	bool sign = false;
 	static const std::array<std::array<std::function<integer_number(const integer_number&, const integer_number&)>, 2>, 2> sign_table;
 
 public:
+	integer_number() = default;
 	integer_number(int num) {
 		data.push_back(std::abs(num));
 		sign = num < 0;
@@ -36,9 +37,9 @@ public:
 	static integer_number table_function_pn(const integer_number& first, const integer_number& second); // +  -
 	static integer_number table_function_pp(const integer_number& first, const integer_number& second); // +  +
 
-	integer_number multiply(uint64_t num, size_t offset) const;
+	integer_number multiply(uint64_t right, size_t offset) const;
 	integer_number devide(const uint32_t& denominator, int offset) const;
-	std::tuple<integer_number, uint32_t> devide_mod(const uint32_t& denominator, int offset) const;
+	std::tuple<integer_number, integer_number> devide_mod(const integer_number& denominator) const;
 
 	integer_number power(uint32_t exponent) const;
 	integer_number operator+(const integer_number& num) const;
@@ -59,14 +60,10 @@ public:
 	integer_number& operator=(const std::vector<uint32_t>& vec);
 	void change_sign();
 	integer_number get_elements(size_t offset, size_t count) const;
-	integer_number mod(const integer_number& num) const;
+	integer_number mod(const integer_number& v) const;
 	integer_number gcd(integer_number num) const;
 	integer_number& push_forward(const uint32_t& in);
-
-private:
-
 	int abs_cmp(const integer_number& right) const;
-
 };
 
 
