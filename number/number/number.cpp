@@ -174,7 +174,7 @@ std::tuple<integer_number, integer_number> integer_number::devide_mod(const inte
 
 			integer_number lower_remainder = numerator_upper_elements - lower_x_denominator;
 
-			while (lower_remainder.abs_cmp(denominator) == 1) {
+			while (lower_remainder.abs_cmp(denominator) != -1) {
 
 				numerator_tmp = lower_remainder.get(lower_remainder.size() - 1);
 
@@ -393,6 +393,7 @@ bool number::operator<(const number& num) const { return cmp(num) == -1; }
 bool number::operator<=(const number& num) const { return cmp(num) != 1; }
 
 number number::power(int exponent) const 
+
 { 
 	if (exponent == 0) { return number(1); }
 	if (exponent == 1) { return *this; }

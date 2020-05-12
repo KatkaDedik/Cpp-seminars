@@ -255,9 +255,9 @@ void everything_subtest() {
 
 
 	number nn(25);
-	nn = nn.sqrt(0);
-	assert(nn > number(4999) / 1000);
-	//assert(nn < number(5001) / 1000);
+	nn = nn.sqrt(1);
+	assert(nn > number(49) / 10);
+	assert(nn < number(51) / 10);
 
 	number u = number(2).power(500);      // b = 2 i = 500
 	number m1 = number(2).power(-500);
@@ -311,14 +311,15 @@ void everything_subtest() {
 	number n12 = number(11).sqrt(71);
 
 	number error = m - n12 > 0 ? m - n12 : n12 - m;
-	//assert(error < number(10).power(-70));
+	assert(error < number(10).power(-70));
 	//
 
 
 	number f = number(144).sqrt(3);
 
 	number g = number(9).sqrt(0);
-	//assert(g == 3);
+	assert(g >= 3);
+	assert(g < 4);
 
 
 	number n5 = number(1019).power(500);    // b = 1019 i = 500
@@ -339,7 +340,29 @@ void everything_subtest() {
 	assert(big - 1 < big);
 }
 
+void pow_subtest() {
+
+	
+
+	for (int bb = 2; bb < 5; ++bb) {
+		number b(bb);
+		for (int i = 450; i < 550; i) {
+			i += 10;
+			number n = b.power(i);
+			number m = b.power(-i);
+			number one = m * n;
+			assert(one == number(1));
+			number bp = n * b.power(-i + 1);
+			assert(bp == b);
+			assert(bp.power(i) / bp.power(i - 1) == bp);
+		}
+	}
+	
+	
+}
+
 void number_tests() {
+	pow_subtest();
 	spec_test();
 	precision_subtest();
 	everything_subtest();
