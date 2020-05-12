@@ -178,7 +178,12 @@ std::tuple<integer_number, integer_number> integer_number::devide_mod(const inte
 
 				numerator_tmp = lower_remainder.get(lower_remainder.size() - 1);
 
+				if (numerator_tmp < denominator_tmp) {
+					numerator_tmp = numerator_tmp << 32 | lower_remainder.get(lower_remainder.size() - 2);
+				}
+
 				upper_guess = numerator_tmp / denominator_tmp;
+
 				upper_remainder = lower_remainder - denominator.multiply(upper_guess, 0);
 
 				if (!upper_remainder.sgn()) {
@@ -196,9 +201,15 @@ std::tuple<integer_number, integer_number> integer_number::devide_mod(const inte
 			ret.push_back(lower_guess);
 		}
 	}
+	
+
 	std::reverse(std::begin(ret), std::end(ret));
 	remove_zeros(ret);
 	integer_number res(ret, sign ^ denominator.sgn());
+	if (numerator_upper_elements.abs_cmp(denominator) != -1) {
+		numerator_upper_elements = numerator_upper_elements - denominator;
+		res = res + integer_number(1);
+	}
 	return std::make_pair(res, numerator_upper_elements);
 }
 
@@ -330,6 +341,12 @@ integer_number integer_number::gcd(integer_number v) const {
 	return u;
 }
 
+integer_number integer_number::make_quess_for_sqrt() const {
+	integer_number upper(std::vector<uint32_t>(data.begin(), data.begin() + data.size() / 2), false);
+	integer_number lower(std::vector<uint32_t>(data.begin() + data.size() / 2, data.end()), false);
+	return ((upper + lower).devide(2, 0) + 1);
+}
+
 /*---------------------------NUMBER---------------------------*/
 
 number number::operator+(const number& num) const {
@@ -393,10 +410,10 @@ bool number::operator<(const number& num) const { return cmp(num) == -1; }
 bool number::operator<=(const number& num) const { return cmp(num) != 1; }
 
 number number::power(int exponent) const 
-
 { 
 	if (exponent == 0) { return number(1); }
 	if (exponent == 1) { return *this; }
+	if (*this == 1 || *this == 0) { return *this; }
 	if (exponent == -1) {
 		if (numerator == integer_number(0)) {
 			throw std::logic_error("invalid devide by 0!");
@@ -407,25 +424,32 @@ number number::power(int exponent) const
 	return number(numerator.power(std::abs(exponent)), denominator.power(std::abs(exponent)));
 }
 
-number number::sqrt(int precision) const 
-{ 
-/*
-*https://cs.stackexchange.com/questions/37596/arbitrary-precision-integer-square-root-algorithm*/
+number number::sqrt(int precision) const {
 
-	if (sgn()) { 
-		throw std::logic_error("invalid sqrt of negateve number!"); 
-	}
+	number upper = *this;
+	number middle(numerator.make_quess_for_sqrt(), denominator.make_quess_for_sqrt());
+	number lower = 0;
 	number two(2);
-	number current;
-	number next = *this;
-	number tmp;
 	number precision_number = number(10).power(-precision);
-	do {
-		current = next;
-		next = current / two + *this / (two * current);
-		tmp = (current - next).abs();
-	} while ( tmp > precision_number);
-	return next; 
+
+	while (true) {
+
+		number squere = middle.power(2);
+
+		if (squere > *this + precision_number) {
+			upper = middle;
+			middle = (upper + lower) / two;
+			continue;
+		}
+
+		if (squere < *this - precision_number) {
+			lower = middle;
+			middle = (upper + lower) / two;
+			continue;
+		}
+		break;
+	}
+	return middle.simplify();
 }
 
 number& number::abs() 

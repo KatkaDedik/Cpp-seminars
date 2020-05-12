@@ -64,6 +64,7 @@ public:
 	integer_number gcd(integer_number num) const;
 	integer_number& push_forward(const uint32_t& in);
 	int abs_cmp(const integer_number& right) const;
+	integer_number make_quess_for_sqrt() const;
 };
 
 
@@ -74,7 +75,7 @@ class number {
 	integer_number denominator = 1;
 
 public:
-
+	number(integer_number n, integer_number d) : numerator(n), denominator(d) {}
 	number(int value) : numerator(value) {}
 	number() : numerator(0) {}
 
@@ -102,7 +103,7 @@ public:
 
 private:
 
-	number(integer_number n, integer_number d) : numerator(n), denominator(d) {}
+	
 	int cmp(const number& num) const;
 	number& abs();
 	

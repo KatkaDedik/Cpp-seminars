@@ -2,6 +2,7 @@
 #include <cassert>
 #include <iostream>
 #include <climits> // INT_MAX
+#include <chrono>
 
 void primitive_test() {
 
@@ -243,6 +244,8 @@ void precision_subtest() {
 
 void everything_subtest() {
 
+	assert(number(0) == number(-0));
+
 	number n(number(2).power(31) - 1);
 	number x(INT_MAX);
 	assert((number(2).power(31) - 1) == INT_MAX);
@@ -361,11 +364,94 @@ void pow_subtest() {
 	
 }
 
+
+void sqrt_test() {
+
+
+	/*
+	sqrt for i =19996 : 0.009318s
+sqrt for i =19997 : 0.010086s
+sqrt for i =19998 : 0.00985s
+sqrt for i =19999 : 0.010377s
+	*/
+
+	number a = number(19996).sqrt(0);
+	assert(a > number(1414) / number(10));
+	assert(a < number(1415) / number(10));
+}
+
+void test_multiplication() {
+
+	std::cout << "Multiplication TIME TESTS:" << std::endl;
+	std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+	number a = number(459) * number(968);
+	std::chrono::high_resolution_clock::time_point finish = std::chrono::high_resolution_clock::now();
+	assert(a == number(444312));
+
+	std::chrono::duration<double> elapsed = finish - start;
+	std::cout << "TEST 1. Elapsed time: " << elapsed.count() << std::endl;
+
+	start = std::chrono::high_resolution_clock::now();
+	number b = number(45) * number(45842546);
+	finish = std::chrono::high_resolution_clock::now();
+	assert(b == number(2062914570));
+
+	elapsed = finish - start;
+	std::cout << "TEST 3. Elapsed time: " << elapsed.count() << std::endl;
+}
+
+
+void static test_sqrt() {
+	integer_number one(1);
+
+	std::vector<uint32_t> aa;
+	aa.push_back(0x5a1db6a1);
+	aa.push_back(0x33096e64);
+	aa.push_back(0xdbf);
+	integer_number a_tmp(aa, false);
+
+	number a(a_tmp, one); //number a("64917769987331924539041");
+
+	std::vector<uint32_t> a_res_vec;
+	a_res_vec.push_back(0x52a5a6d1);
+	a_res_vec.push_back(0x3b);
+	number a_res(integer_number(a_res_vec, false), integer_number(10000));
+	number ar = a.sqrt(3);
+	//assert(a.sqrt(3) == a_res);
+	
+	//number s = number("254856896523254856896523").sqrt(3); /* 3 fractional numerators */
+	/* the exact result rounded to 3 fractional places is 504833533477.378 */
+	//number lower = number("5048335334773775") * number(10).power(-4);
+	//number upper = number("5048335334773785") * number(10).power(-4);
+	//assert(s > lower);
+	//assert(s < upper);
+
+	//number t = number("254856896523254856896523").sqrt(0); /* 3 fractional numerators */
+	/* the exact result rounded to 3 fractional places is 504833533477 */
+	//lower = number("5048335334765") * number(10).power(-1);
+	//upper = number("5048335334775") * number(10).power(-1);
+	//assert(t > lower);
+	//assert(t < upper);*/
+}
+
+void another_tests() {
+	test_multiplication();
+	test_sqrt();
+}
+
 void number_tests() {
-	pow_subtest();
+	
 	spec_test();
-	precision_subtest();
+	
+	sqrt_test();
+
 	everything_subtest();
+
+	pow_subtest();
+
+	precision_subtest();
+	
+	another_tests();
 }
 
 
