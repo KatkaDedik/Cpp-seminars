@@ -437,10 +437,6 @@ void static test_sqrt() {
 
 void didn_passed_tests() {
 
-
-
-
-
 	number m(0);
 	number s = number(10).power(-5);// scale = -5 
 	m = m + number(331662) * s;            // chunk = 331662 

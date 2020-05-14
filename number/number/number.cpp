@@ -206,10 +206,6 @@ std::tuple<integer_number, integer_number> integer_number::devide_mod(const inte
 	std::reverse(std::begin(ret), std::end(ret));
 	remove_zeros(ret);
 	integer_number res(ret, sign ^ denominator.sgn());
-	if (numerator_upper_elements.abs_cmp(denominator) != -1) {
-		numerator_upper_elements = numerator_upper_elements - denominator;
-		res = res + integer_number(1);
-	}
 	return std::make_pair(res, numerator_upper_elements);
 }
 
