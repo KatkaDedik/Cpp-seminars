@@ -72,7 +72,6 @@ void simple_vector()
 	vector v(vv);
 	vector w(ww);
 
-	assert(u.length() == 1);
 	assert((n * u) == 0);
 	assert((w * u) == 2);
 	assert((w * n) == 0);
