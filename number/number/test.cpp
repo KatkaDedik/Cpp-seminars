@@ -438,7 +438,16 @@ void static test_sqrt() {
 void didn_passed_tests() {
 
 
-
+	number n(0);
+	for (int i = 0; i < 50; i++) {
+		n = n + number(2).power(-i);
+	}    // q = 2 
+		
+	number dnm = number(1) - number(1) / 2;
+	number sum = number(1) / dnm;
+	assert(sum - n > 0);
+	
+		
 
 
 	number m(0);
@@ -478,7 +487,7 @@ void didn_passed_tests() {
 	m = m + number(65090) * s;          // chunk = 65090 
 	s = number(10).power(-107);// scale = -107 
 	m = m + number(424242) * s; // chunk = 424242
-	number n = number(11).sqrt(71);
+	n = number(11).sqrt(71);
 	number error = m - n > 0 ? m - n : n - m;
 	assert(error > 0);
 

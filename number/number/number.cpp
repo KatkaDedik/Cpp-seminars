@@ -275,6 +275,7 @@ integer_number integer_number::operator*(const integer_number& num) const
 		ret = ret + temp;
 	}
 	if (sign ^ num.sgn()) { return -ret; }
+	remove_zeros(ret.data);
 	return ret;
 }
 
