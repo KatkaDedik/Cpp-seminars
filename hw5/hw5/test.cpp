@@ -80,7 +80,117 @@ void simple_vector()
 
 }
 
+void simple_determinant() {
+	matrix ate_mat(8);
+	assert(ate_mat.det() == 1);
+	assert(true);
+}
+
+void inv() {
+	using nv = std::vector< number >;
+	using vv = std::vector< vector >;
+	const number zero(0);
+	const number one(1);
+	const number two(2);
+	const vector e_x(nv{ two, zero });
+	const vector e_y(nv{ zero, one });
+	const matrix m(vv{ e_x, e_y });
+	assert(m.det() == two);
+}
+
+void mat() {
+	using nv = std::vector< number >;
+	using vv = std::vector< vector >;
+	const number zero(0);
+	const number one(1);
+	const vector v_0(3);
+	const vector e_x(nv{ one, zero, zero });
+	const vector e_y(nv{ zero, one, zero });
+	const vector e_z(nv{ zero, zero, one });
+	const matrix m_id(vv{ e_x, e_y, e_z });
+	const matrix m_0(3, 3);
+	const matrix m_1(vv{ e_x, e_x, e_y });
+	const matrix m_2(vv{ e_x, e_y });
+	assert(m_1 != m_id);
+}
+
+void mul() {
+	using nv = std::vector< number >;
+	using vv = std::vector< vector >;
+	const number zero(0);
+	const number one(1);
+	const vector v_0(3);
+	const vector e_x(nv{ one, zero, zero });
+	const vector e_y(nv{ zero, one, zero });
+	const vector e_z(nv{ zero, zero, one });
+	const matrix m_id(vv{ e_x, e_y, e_z });
+	const matrix m_0(3, 3);
+	assert(m_id * v_0 == v_0);
+}
+
+void vec() {
+	using nv = std::vector< number >;
+	const number zero(0);
+	const number one(1);
+	const number two(2);
+	const vector v_0(3);
+	const vector e_x(nv{ one, zero, zero });
+	const vector e_y(nv{ zero, one, zero });
+	const vector e_z(nv{ zero, zero, one });
+	assert(e_x != e_y);
+}
+
+void sanity() {
+	inv();
+	mat();
+	mul();
+	vec();
+}
+
+void gauss() {
+	using nv = std::vector< number >;
+	using vv = std::vector< vector >;
+
+	const vector e_x(nv{ number(1), number(1), number(2) });
+	const vector e_y(nv{ number(2), number(4), number(8) });
+	const vector e_z(nv{ number(3), number(2), number(4) });
+	const vector e_a(nv{ number(9), number(3), number(5) });
+
+	matrix m_e(vv{ e_x, e_y, e_z , e_a});
+
+	const vector s_x(nv{ number(1), number(0), number(0)});
+	const vector s_y(nv{ number(0), number(1), number(0)});
+	const vector s_z(nv{ number(4), number(-1) / number(2), number(0)});
+	const vector s_a(nv{ number(0), number(0), number(1)});
+
+
+	const matrix m_s(vv{ s_x, s_y, s_z , s_a});
+	m_e.print();
+	
+	m_e.gauss();
+	m_e.print();
+	assert(m_e == m_s);
+}
+
+void inverse() {
+	using nv = std::vector< number >;
+	using vv = std::vector< vector >;
+
+	const vector e_x(nv{ number(1), number(1), number(2) });
+	const vector e_y(nv{ number(2), number(4), number(10) });
+	const vector e_z(nv{ number(3), number(5), number(4) });
+
+	const matrix m_e(vv{ e_x, e_y, e_z });
+
+	m_e.print();
+	m_e.inv().print();
+
+}
 
 int main(){
+	sanity();
 	simple_vector();
+	simple_determinant();
+	gauss();
+	inverse();
 }

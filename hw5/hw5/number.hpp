@@ -36,6 +36,7 @@ public:
 	integer_number devide(const uint32_t& denominator, int offset) const;
 	std::tuple<integer_number, integer_number> devide_mod(const integer_number& denominator) const;
 
+
 	integer_number operator+(const integer_number& num) const;
 	integer_number operator-(const integer_number& num) const;
 	integer_number operator-();
@@ -54,8 +55,8 @@ public:
 	integer_number& operator=(const std::vector<uint32_t>& vec);
 	void change_sign();
 	integer_number get_elements(size_t offset, size_t count) const;
-	integer_number mod(const integer_number& v) const;
-	integer_number gcd(integer_number num) const;
+	integer_number mod(const integer_number& num) const;
+	integer_number gcd(integer_number v) const;
 	integer_number& push_forward(const uint32_t& in);
 	int abs_cmp(const integer_number& right) const;
 };
@@ -89,13 +90,10 @@ public:
 	void simplify_sign();
 	number& simplify();
 
+	integer_number get_numerator() const { return numerator; }
+	integer_number get_denominator() const { return denominator; }
 private:
 
 	int cmp(const number& num) const;
 	number& abs();
-
-protected:
-
-	integer_number get_numerator() const { return numerator; }
-	integer_number get_denominator() const { return denominator; }
 };

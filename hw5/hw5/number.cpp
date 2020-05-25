@@ -150,6 +150,10 @@ std::tuple<integer_number, integer_number> integer_number::devide_mod(const inte
 		uint64_t tmp = numerator_upper_elements.get(denominator.size());
 		numerator_tmp = (tmp << 32) | numerator_upper_elements.get(denominator.size() - 1);
 
+		if (denominator_tmp == 0) {
+			throw std::logic_error("invalid devide by 0!");
+		}
+
 		uint64_t upper_guess = numerator_tmp / denominator_tmp;
 		integer_number upper_x_denominator = denominator.multiply(upper_guess, 0);
 
