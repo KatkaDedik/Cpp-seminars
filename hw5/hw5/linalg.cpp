@@ -38,7 +38,17 @@ number vector::operator*(const vector& v) const {
 }
 
 vector vector::operator*(const matrix& mat) const {
-	return mat.col(0);
+	number_vector ret;
+
+	for (size_t i = 0; i < mat.size(); i++) {
+		number tmp;
+		for (size_t j = 0; j < mat.col(0).size(); j++) {
+			tmp = tmp + (mat.get_element(i, j) * u[j]);
+		}
+		ret.emplace_back(tmp);
+	}
+
+	return vector(ret);
 }
 
 bool vector::operator==(const vector& v) const
@@ -81,6 +91,10 @@ matrix& matrix::gauss()
 		size_t non_zero = r;
 		while (non_zero < mat.size() && mat[non_zero][r] == 0) {
 			non_zero++;
+		}
+
+		if (non_zero == mat.size()) {
+			continue;
 		}
 
 		number tmp_denominator = mat[non_zero][r];
@@ -172,7 +186,8 @@ matrix matrix::inv() const
 
 	matrix tmp_matrix(tmp);
 	tmp_matrix.gauss();
-
+	std::cout << "tmp matrix" << std::endl;
+	tmp_matrix.print();
 	std::vector<vector> inverse;
 
 	for (size_t i = mat.size(); i < tmp_matrix.size(); i++) {

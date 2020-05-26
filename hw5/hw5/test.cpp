@@ -112,6 +112,8 @@ void mat() {
 	const matrix m_1(vv{ e_x, e_x, e_y });
 	const matrix m_2(vv{ e_x, e_y });
 	assert(m_1 != m_id);
+	m_0.print();
+	assert(m_0.rank() == 0);
 }
 
 void mul() {
@@ -126,6 +128,7 @@ void mul() {
 	const matrix m_id(vv{ e_x, e_y, e_z });
 	const matrix m_0(3, 3);
 	assert(m_id * v_0 == v_0);
+	assert(v_0* m_id == v_0);
 }
 
 void vec() {
@@ -172,7 +175,69 @@ void gauss() {
 	assert(m_e == m_s);
 }
 
+void rank() {
+	vector row1(std::vector<number>{number(1), number(2), number(3)});
+	vector row2(std::vector<number>{number(0), number(0), number(0)});
+	vector row3(std::vector<number>{number(-1), number(-2), number(-3)});
+	matrix m(std::vector<vector>{row1, row2, row3});
+	assert(m.rank() == 1);
+
+	vector row6(std::vector<number>{number(1), number(0), number(2), number(-1)});
+	vector row7(std::vector<number>{number(3), number(0), number(0), number(5)});
+	vector row8(std::vector<number>{number(2), number(1), number(4), number(-3)});
+	vector row9(std::vector<number>{number(1), number(0), number(5), number(0)});
+	matrix m2(std::vector<vector>{row6, row7, row8, row9});
+	assert(m2.rank() == 4);
+
+	vector row13(std::vector<number>{number(3), number(3), number(3), number(3), number(2)});
+	vector row14(std::vector<number>{number(2), number(7), number(0), number(2), number(1)});
+	vector row15(std::vector<number>{number(4), number(3), number(3), number(1), number(0)});
+	vector row16(std::vector<number>{number(0), number(3), number(3), number(6), number(7)});
+	vector row17(std::vector<number>{number(2), number(3), number(6), number(6), number(6)});
+	matrix m4(std::vector<vector>{row13, row14, row15, row16, row17});
+	assert(m4.rank() == 5);
+
+	vector row10(std::vector<number>{number(1), number(2), number(3)});
+	vector row11(std::vector<number>{number(4), number(5), number(6)});
+	vector row12(std::vector<number>{number(7), number(8), number(9)});
+	matrix m3(std::vector<vector>{row10, row11, row12});
+	assert(m3.rank() == 2);
+}
+
+void determinant() {
+	//2x2 det
+	vector row4(std::vector<number>{number(1), number(2)});
+	vector row5(std::vector<number>{number(2), number(1)});
+	matrix m1(std::vector<vector>{row4, row5});
+	assert(m1.det() == -3);
+
+	//4x4 det
+	vector row6(std::vector<number>{number(1), number(0), number(2), number(-1)});
+	vector row7(std::vector<number>{number(3), number(0), number(0), number(5)});
+	vector row8(std::vector<number>{number(2), number(1), number(4), number(-3)});
+	vector row9(std::vector<number>{number(1), number(0), number(5), number(0)});
+	matrix m2(std::vector<vector>{row6, row7, row8, row9});
+	assert(m2.det() == 30);
+
+	//3x3 det
+	vector row10(std::vector<number>{number(6), number(1), number(1)});
+	vector row11(std::vector<number>{number(4), number(-2), number(5)});
+	vector row12(std::vector<number>{number(2), number(8), number(7)});
+	matrix m3(std::vector<vector>{row10, row11, row12});
+	assert(m3.det() == -306);
+
+	//5x5 det
+	vector row13(std::vector<number>{number(3), number(3), number(3), number(3), number(2)});
+	vector row14(std::vector<number>{number(2), number(7), number(0), number(2), number(1)});
+	vector row15(std::vector<number>{number(4), number(3), number(3), number(1), number(0)});
+	vector row16(std::vector<number>{number(0), number(3), number(3), number(6), number(7)});
+	vector row17(std::vector<number>{number(2), number(3), number(6), number(6), number(6)});
+	matrix m4(std::vector<vector>{row13, row14, row15, row16, row17});
+	assert(m4.det() == -129);
+}
+
 void inverse() {
+
 	using nv = std::vector< number >;
 	using vv = std::vector< vector >;
 
@@ -185,6 +250,128 @@ void inverse() {
 	m_e.print();
 	m_e.inv().print();
 
+	vector row4(std::vector<number>{number(1), number(2)});
+	vector row5(std::vector<number>{number(2), number(1)});
+	matrix m1(std::vector<vector>{row4, row5});
+
+	vector inv_row(std::vector<number>{number(-1) / number(3), number(2) / number(3)});
+	vector inv_row1(std::vector<number>{number(2) / number(3), number(-1) / number(3)});
+	matrix inv_m1(std::vector<vector>{inv_row, inv_row1});
+	assert(m1.inv() == inv_m1);
+
+	vector row6(std::vector<number>{number(1), number(0), number(2), number(-1)});
+	vector row7(std::vector<number>{number(3), number(0), number(0), number(5)});
+	vector row8(std::vector<number>{number(2), number(1), number(4), number(-3)});
+	vector row9(std::vector<number>{number(1), number(0), number(5), number(0)});
+	matrix m2(std::vector<vector>{row6, row7, row8, row9});
+
+	vector inv_row6(
+		std::vector<number>{number(5) / number(6), number(1) / number(6), number(0), number(-1) / number(3)});
+	vector inv_row7(
+		std::vector<number>{number(-5) / number(2), number(1) / number(10), number(1), number(1) / number(5)});
+	vector inv_row8(std::vector<number>{number(-1) / number(6), number(-1) / number(30), number(0),
+		number(4) / number(15)});
+	vector inv_row9(
+		std::vector<number>{number(-1) / number(2), number(1) / number(10), number(0), number(1) / number(5)});
+	matrix inv_m2(std::vector<vector>{inv_row6, inv_row7, inv_row8, inv_row9});
+	m2.print();
+	m2.inv().print();
+	inv_m2.print();
+
+	assert(m2.inv() == inv_m2);
+
+	vector row10(std::vector<number>{number(6), number(1), number(1)});
+	vector row11(std::vector<number>{number(4), number(-2), number(5)});
+	vector row12(std::vector<number>{number(2), number(8), number(7)});
+	matrix m3(std::vector<vector>{row10, row11, row12});
+
+	vector inv_row10(
+		std::vector<number>{number(3) / number(17), number(-1) / number(306), number(-7) / number(306)});
+	vector inv_row11(
+		std::vector<number>{number(1) / number(17), number(-20) / number(153), number(13) / number(153)});
+	vector inv_row12(
+		std::vector<number>{number(-2) / number(17), number(23) / number(153), number(8) / number(153)});
+	matrix inv_m3(std::vector<vector>{inv_row10, inv_row11, inv_row12});
+	assert(m3.inv() == inv_m3);
+
+	vector row13(std::vector<number>{number(3), number(3), number(3), number(3), number(2)});
+	vector row14(std::vector<number>{number(2), number(7), number(0), number(2), number(1)});
+	vector row15(std::vector<number>{number(4), number(3), number(3), number(1), number(0)});
+	vector row16(std::vector<number>{number(0), number(3), number(3), number(6), number(7)});
+	vector row17(std::vector<number>{number(2), number(3), number(6), number(6), number(6)});
+	matrix m4(std::vector<vector>{row13, row14, row15, row16, row17});
+
+	vector inv_row13(std::vector<number>{number(13) / number(43), number(-12) / number(43), number(21) / number(43),
+		number(22) / number(43), number(-28) / number(43)});
+	vector inv_row14(std::vector<number>{number(-18) / number(43), number(10) / number(43), number(4) / number(43),
+		number(-4) / number(43), number(9) / number(43)});
+	vector inv_row15(std::vector<number>{number(-70) / number(129), number(5) / number(43), number(2) / number(43),
+		number(-49) / number(129), number(26) / number(43)});
+	vector inv_row16(std::vector<number>{number(72) / number(43), number(3) / number(43), number(-59) / number(43),
+		number(-27) / number(43), number(7) / number(43)});
+	vector inv_row17(std::vector<number>{number(-44) / number(43), number(-9) / number(43), number(48) / number(43),
+		number(38) / number(43), number(-21) / number(43)});
+	matrix inv_m4(std::vector<vector>{inv_row13, inv_row14, inv_row15, inv_row16, inv_row17});
+	assert(m4.inv() == inv_m4);
+}
+
+void gauss_2() {
+	vector row13(std::vector<number>{number(3), number(3), number(3), number(3), number(2)});
+	vector row14(std::vector<number>{number(2), number(7), number(0), number(2), number(1)});
+	vector row15(std::vector<number>{number(4), number(3), number(3), number(1), number(0)});
+	vector row16(std::vector<number>{number(0), number(3), number(3), number(6), number(7)});
+	vector row17(std::vector<number>{number(2), number(3), number(6), number(6), number(6)});
+	matrix m4(std::vector<vector>{row13, row14, row15, row16, row17});
+	m4.gauss();
+
+	assert(m4.row(0) == vector({ 1, 0, 0, 0, 0 }));
+	assert(m4.row(1) == vector({ 0, 1, 0, 0, 0 }));
+	assert(m4.row(2) == vector({ 0, 0, 1, 0, 0 }));
+	assert(m4.row(3) == vector({ 0, 0, 0, 1, 0 }));
+	assert(m4.row(4) == vector({ 0, 0, 0, 0, 1 }));
+
+	vector row10(std::vector<number>{number(6), number(1), number(1)});
+	vector row11(std::vector<number>{number(4), number(-2), number(5)});
+	vector row12(std::vector<number>{number(2), number(8), number(7)});
+	matrix m3(std::vector<vector>{row10, row11, row12});
+	m3.gauss();
+
+	assert(m3.row(0) == vector({ 1, 0, 0 }));
+	assert(m3.row(1) == vector({ 0, 1, 0 }));
+	assert(m3.row(2) == vector({ 0, 0, 1 }));
+
+	vector row6(std::vector<number>{number(1), number(0), number(2), number(-1), number(9)});
+	vector row7(std::vector<number>{number(3), number(0), number(0), number(5), number(2)});
+	vector row8(std::vector<number>{number(2), number(1), number(4), number(-3), number(-7)});
+	vector row9(std::vector<number>{number(1), number(0), number(5), number(0), number(1)});
+	matrix m2(std::vector<vector>{row6, row7, row8, row9});
+	m2.gauss();
+
+	assert(m2.row(0) == vector({ 1, 0, 0, 0, number(15) / 2 }));
+	assert(m2.row(1) == vector({ 0, 1, 0, 0, number(-291) / 10 }));
+	assert(m2.row(2) == vector({ 0, 0, 1, 0, number(-13) / 10 }));
+	assert(m2.row(3) == vector({ 0, 0, 0, 1, number(-41) / 10 }));
+}
+
+void col() {
+	vector row13(std::vector<number>{number(3), number(3), number(3), number(3), number(2)});
+	vector row14(std::vector<number>{number(2), number(7), number(0), number(2), number(1)});
+	vector row15(std::vector<number>{number(4), number(3), number(3), number(1), number(0)});
+	vector row16(std::vector<number>{number(0), number(3), number(3), number(6), number(7)});
+	vector row17(std::vector<number>{number(2), number(3), number(6), number(6), number(6)});
+	matrix m4(std::vector<vector>{row13, row14, row15, row16, row17});
+
+	vector col0({ 3, 2, 4, 0, 2 });
+	vector col1({ 3, 7, 3, 3, 3 });
+	vector col2({ 3, 0, 3, 3, 6 });
+	vector col3({ 3, 2, 1, 6, 6 });
+	vector col4({ 2, 1, 0, 7, 6 });
+
+	assert(m4.col(0) == col0);
+	assert(m4.col(1) == col1);
+	assert(m4.col(2) == col2);
+	assert(m4.col(3) == col3);
+	assert(m4.col(4) == col4);
 }
 
 int main(){
@@ -193,4 +380,8 @@ int main(){
 	simple_determinant();
 	gauss();
 	inverse();
+	determinant();
+	gauss_2();
+	col();
+	rank();
 }
