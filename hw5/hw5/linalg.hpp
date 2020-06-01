@@ -18,7 +18,7 @@ public:
 	vector(number_vector v) : u(v) {}
 
 	size_t size() const { return u.size(); }
-	number_vector get() const { return u; }
+	number_vector& get() { return u; }
 	const number& operator[](int index) const { return u[index]; }
 	number& operator[](int index) { return u[index]; }
 	
@@ -43,30 +43,18 @@ class matrix
 public: 
 
 	matrix(int columns, int rows) {
-		for (int i = 0; i < columns; i++) {
-			mat.emplace_back(vector(rows));
+		for (int i = 0; i < rows; i++) {
+			mat.emplace_back(vector(columns));
 		}
 	}
 
 	explicit matrix(std::vector<vector> m) : mat(m) {}
 
-	explicit matrix(int dimension) {
-		for (int i = 0; i < dimension; i++) {
-			vector tmp(dimension);
-			tmp.set(i, number(1));
-			mat.emplace_back(tmp);
-		}
-	}
-
-	/*	‹m.gauss()› performs in - place Gaussian elimination : after the
-	*	call, ‹m› should be in a reduced row echelon form */
 	matrix& gauss();
 
 	int rank() const;
 
 	number det() const;
-
-	number determinant(const std::vector<std::vector<const number*>>& pseudo_matrix) const;
 	
 	matrix inv() const;
 	
@@ -74,7 +62,9 @@ public:
 	
 	vector col(int n) const;
 
-	size_t size() const { return mat.size(); }
+	size_t row_count() const { return mat.size(); }
+
+	size_t col_count() const { return mat[0].size(); }
 
 	matrix operator+(const matrix& right) const;
 	bool operator==(const matrix& right) const;
@@ -82,41 +72,72 @@ public:
 	vector operator*(const vector& v) const;
 
 	number get_element(int col, int row) const {
-		return mat[col][row];
+		return mat[row][col];
 	}
 
-	void set_element(int col, int row, const number& val) { mat[col][row] = val; }
+	void set_element(int col, int row, const number& val) { mat[row][col] = val; }
 
 	void print() const {
 
-		for (size_t i = 0; i < mat[0].size(); i++) {
-			for (size_t j = 0; j < mat.size(); j++) {
-				if (mat[j][i].sgn()) {
+		for (size_t row = 0; row < mat.size(); row++) {
+			for (size_t col = 0; col < mat[row].size(); col++) {
+				if (mat[row][col].sgn()) {
 					std::cout << "-";
 				}
 				else {
-					std::cout << "+";
+					std::cout << " ";
 				}
-				std::cout << std::setw(9) << mat[j][i].get_numerator().get(0) << "   ";
+				std::cout << std::setw(9) << mat[row][col].get_numerator().get(0) << "   ";
 			}
 			std::cout << std::endl;
-			for (size_t j = 0; j < mat.size(); j++) {
+			for (size_t col = 0; col < mat[row].size(); col++) {
 				std::cout << "----------   ";
 			}
 			std::cout << std::endl;
-			for (size_t j = 0; j < mat.size(); j++) {
-				std::cout << std::setw(10) << mat[j][i].get_denominator().get(0) << "   ";
+			for (size_t col = 0; col < mat[row].size(); col++) {
+				std::cout << std::setw(10) << mat[row][col].get_denominator().get(0) << "   ";
 			}
 			std::cout << std::endl;
 			std::cout << std::endl;
 		}
 		std::cout << std::endl << std::endl << std::endl;
 	}
+
+	std::vector<vector>& get() { return mat; }
+
 };
 
 inline vector operator*(const number& num, const vector& v)
 {
     return v * num;
+}
+
+inline number determinant(const std::vector<std::vector<const number*>>& pseudo_matrix) {
+	if (pseudo_matrix.size() == 1) {
+		return *pseudo_matrix[0][0];
+	}
+
+	number det_sum(0);
+
+	for (size_t i = 0; i < pseudo_matrix.size(); i++) {
+		std::vector<std::vector<const number*>> tmp_matrix;
+		for (size_t j = 0; j < pseudo_matrix.size(); j++) {
+			if (j == i) continue;
+			std::vector<const number*> tmp_vector;
+			for (size_t k = 1; k < pseudo_matrix.size(); k++) {
+				tmp_vector.push_back(pseudo_matrix[j][k]);
+			}
+			tmp_matrix.push_back(tmp_vector);
+		}
+
+		if (i % 2 == 0) {
+			det_sum = det_sum + (*pseudo_matrix[i][0] * determinant(tmp_matrix));
+		}
+		else {
+			det_sum = det_sum - (*pseudo_matrix[i][0] * determinant(tmp_matrix));
+		}
+	}
+	return det_sum;
 }
 
 

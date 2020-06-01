@@ -390,6 +390,9 @@ void number::simplify_sign()
 		numerator.change_sign();
 		denominator.change_sign();
 	}
+	if (numerator.sgn() && numerator == 0) {
+		numerator.change_sign();
+	}
 }
 bool number::sgn() const {
 	return (numerator.sgn() ^ denominator.sgn());

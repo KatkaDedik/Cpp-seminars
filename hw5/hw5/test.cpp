@@ -80,12 +80,6 @@ void simple_vector()
 
 }
 
-void simple_determinant() {
-	matrix ate_mat(8);
-	assert(ate_mat.det() == 1);
-	assert(true);
-}
-
 void inv() {
 	using nv = std::vector< number >;
 	using vv = std::vector< vector >;
@@ -112,7 +106,6 @@ void mat() {
 	const matrix m_1(vv{ e_x, e_x, e_y });
 	const matrix m_2(vv{ e_x, e_y });
 	assert(m_1 != m_id);
-	m_0.print();
 	assert(m_0.rank() == 0);
 }
 
@@ -163,15 +156,11 @@ void gauss() {
 
 	const vector s_x(nv{ number(1), number(0), number(0)});
 	const vector s_y(nv{ number(0), number(1), number(0)});
-	const vector s_z(nv{ number(4), number(-1) / number(2), number(0)});
-	const vector s_a(nv{ number(0), number(0), number(1)});
-
+	const vector s_z(nv{ number(0), number(0), number(1)});
+	const vector s_a(nv{ number(0), number(0), number(0)});
 
 	const matrix m_s(vv{ s_x, s_y, s_z , s_a});
-	m_e.print();
-	
 	m_e.gauss();
-	m_e.print();
 	assert(m_e == m_s);
 }
 
@@ -247,9 +236,6 @@ void inverse() {
 
 	const matrix m_e(vv{ e_x, e_y, e_z });
 
-	m_e.print();
-	m_e.inv().print();
-
 	vector row4(std::vector<number>{number(1), number(2)});
 	vector row5(std::vector<number>{number(2), number(1)});
 	matrix m1(std::vector<vector>{row4, row5});
@@ -274,9 +260,6 @@ void inverse() {
 	vector inv_row9(
 		std::vector<number>{number(-1) / number(2), number(1) / number(10), number(0), number(1) / number(5)});
 	matrix inv_m2(std::vector<vector>{inv_row6, inv_row7, inv_row8, inv_row9});
-	m2.print();
-	m2.inv().print();
-	inv_m2.print();
 
 	assert(m2.inv() == inv_m2);
 
@@ -377,7 +360,6 @@ void col() {
 int main(){
 	sanity();
 	simple_vector();
-	simple_determinant();
 	gauss();
 	inverse();
 	determinant();

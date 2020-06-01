@@ -40,10 +40,10 @@ number vector::operator*(const vector& v) const {
 vector vector::operator*(const matrix& mat) const {
 	number_vector ret;
 
-	for (size_t i = 0; i < mat.size(); i++) {
+	for (size_t col = 0; col < mat.col_count(); col++) {
 		number tmp;
-		for (size_t j = 0; j < mat.col(0).size(); j++) {
-			tmp = tmp + (mat.get_element(i, j) * u[j]);
+		for (size_t row = 0; row < mat.row_count(); row++) {
+			tmp = tmp + (mat.get_element(row, col) * u[row]);
 		}
 		ret.emplace_back(tmp);
 	}
@@ -82,35 +82,44 @@ bool vector::operator!=(const vector& v) const {
 }
 
 
-
 /*--------------------MATRIX--------------------*/
 
 matrix& matrix::gauss()
 {
-	for (size_t r = 0; r < mat[0].size(); r++) {
-		size_t non_zero = r;
-		while (non_zero < mat.size() && mat[non_zero][r] == 0) {
-			non_zero++;
+	size_t non_zero_col = 0;
+	for (size_t main_row = 0; main_row < row_count(); main_row++) {
+		
+
+		if (non_zero_col >= col_count()) {
+			return *this;
 		}
 
-		if (non_zero == mat.size()) {
-			continue;
-		}
-
-		number tmp_denominator = mat[non_zero][r];
-
-		for (size_t i = non_zero; i < mat.size(); i++) {
-			mat[i][r] = mat[i][r] / tmp_denominator;
-		}
-
-
-		for (size_t cur_r = 0; cur_r < mat[0].size(); cur_r++) {
-			if (cur_r == r) continue;
-			number dif = mat[non_zero][cur_r] / mat[non_zero][r];
-			for (size_t cur_col = non_zero; cur_col < mat.size(); cur_col++) {
-				mat[cur_col][cur_r] = mat[cur_col][cur_r] - (mat[cur_col][r] * dif);
+		if (mat[main_row][non_zero_col] == 0) {
+			bool col_is_zero = true;
+			while (col_is_zero) {
+				for (size_t tmp_row = main_row + 1; tmp_row < row_count(); tmp_row++) {
+					if (mat[tmp_row][non_zero_col] != 0) {
+						mat[main_row].get().swap(mat[tmp_row].get());
+						col_is_zero = false;
+						non_zero_col--;
+						break;
+					}
+				}
+				non_zero_col++;
+				if (non_zero_col >= col_count()) {
+					return *this;
+				}
 			}
 		}
+		number denominator_tmp = mat[main_row][non_zero_col];
+		for (size_t i = non_zero_col; i < col_count(); i++) {
+			mat[main_row][i] = mat[main_row][i] / denominator_tmp;
+		}
+		for (size_t cur_row = 0; cur_row < row_count(); cur_row++) {
+			if (cur_row == main_row) continue;
+			mat[cur_row] = mat[cur_row] - (mat[main_row] * mat[cur_row][non_zero_col]);
+		}
+		non_zero_col++;
 	}
 	return *this;
 }
@@ -119,9 +128,9 @@ int matrix::rank() const
 {
 	matrix tmp = *this;
 	tmp.gauss();
-	int r = mat[0].size();
-	vector zero_vector(mat.size());
-	for (size_t i = 0; i < mat[0].size(); i++) {
+	int r = row_count();
+	vector zero_vector(col_count());
+	for (size_t i = 0; i < row_count(); i++) {
 		if (tmp.row(i) == zero_vector) {
 			r--;
 		}
@@ -131,93 +140,63 @@ int matrix::rank() const
 
 number matrix::det() const {
 	std::vector<std::vector<const number*>> pseudo_matrix;
-	for (size_t i = 0; i < mat.size(); i++) {
+	for (size_t row = 0; row < row_count(); row++) {
 		std::vector<const number*> tmp_vector;
-		for (size_t j = 0; j < mat.size(); j++) {
-			tmp_vector.push_back(&(mat[i][j]));
+		for (size_t col = 0; col < col_count(); col++) {
+			tmp_vector.push_back(&(mat[row][col]));
 		}
 		pseudo_matrix.push_back(tmp_vector);
 	}
 	return determinant(pseudo_matrix);
 }
 
-number matrix::determinant(const std::vector<std::vector<const number*>>& pseudo_matrix) const {
-	if (pseudo_matrix.size() == 1) {
-		return *pseudo_matrix[0][0];
-	}
-
-	number det_sum(0);
-
-	for (size_t i = 0; i < pseudo_matrix.size(); i++) {
-		std::vector<std::vector<const number*>> tmp_matrix;
-		for (size_t j = 0; j < pseudo_matrix.size(); j++) {
-			if (j == i) continue;
-			std::vector<const number*> tmp_vector;
-			for (size_t k = 1; k < pseudo_matrix.size(); k++) {
-				tmp_vector.push_back(pseudo_matrix[j][k]);
-			}
-			tmp_matrix.push_back(tmp_vector);
-		}
-
-		if (i % 2 == 0) {
-			det_sum = det_sum + (*pseudo_matrix[i][0] * determinant(tmp_matrix));
-		}
-		else {
-			det_sum = det_sum - (*pseudo_matrix[i][0] * determinant(tmp_matrix));
-		}
-	}
-	return det_sum;
-}
-
 matrix matrix::inv() const
 {
 
-	if (mat.size() != mat[0].size()) {
+	if (row_count() != col_count()) {
 		return *this;
 	}
 
 	std::vector<vector> tmp = mat;
 
 	for (size_t i = 0; i < mat.size(); i++) {
-		vector v(mat.size());
-		v.set(i, 1);
-		tmp.emplace_back(v);
+		number_vector v(mat.size());
+		v[i] = 1;
+		tmp[i].get().insert(tmp[i].get().end(), v.begin(), v.end());
 	}
 
 	matrix tmp_matrix(tmp);
 	tmp_matrix.gauss();
-	std::cout << "tmp matrix" << std::endl;
-	tmp_matrix.print();
-	std::vector<vector> inverse;
 
-	for (size_t i = mat.size(); i < tmp_matrix.size(); i++) {
-		inverse.emplace_back(tmp_matrix.col(i));
+	for (size_t i = 0; i < tmp_matrix.row_count(); i++) {
+		tmp_matrix.get().at(i).get().erase(
+			tmp_matrix.get().at(i).get().begin(),
+			tmp_matrix.get().at(i).get().begin() + tmp_matrix.row_count());
 	}
-
-	return matrix(inverse);
+	return tmp_matrix;
 }
 
 vector matrix::row(int n) const 
 {
-	number_vector r;
-	for (auto col : mat) {
-		r.emplace_back(col[n]);
-	}
-	return vector(r);
+	return mat[n];
 }
 
 vector matrix::col(int n) const 
 {
-	return mat[n];
+	number_vector v;
+	for (const vector& row : mat) {
+		v.emplace_back(row[n]);
+	}
+	return vector(v);
 }
 
 matrix matrix::operator+(const matrix& right) const 
 {
-	matrix ret(mat.size(), mat[0].size());
+	matrix ret(col_count(), row_count());
 
-	for (size_t i = 0; i < mat.size(); i++) {
-		for (size_t j = 0; j < mat[0].size(); j++) {
-			ret.set_element(i, j, mat[i][j] + right.get_element(i, j));
+	for (size_t row = 0; row < row_count(); row++) {
+		for (size_t col = 0; col < col_count(); col++) {
+			ret.set_element(row, col, mat[row][col] + right.get_element(row, col));
 		}
 	}
 
@@ -226,10 +205,13 @@ matrix matrix::operator+(const matrix& right) const
 
 bool matrix::operator==(const matrix& right) const 
 {
+	if (row_count() != right.row_count() || col_count() != right.col_count()) {
+		return false;
+	}
 
-	for (size_t i = 0; i < mat.size(); i++) {
-		for (size_t j = 0; j < mat[0].size(); j++) {
-			if (mat[i][j] != right.get_element(i, j)) {
+	for (size_t row = 0; row < mat.size(); row++) {
+		for (size_t col = 0; col < mat[0].size(); col++) {
+			if (mat[row][col] != right.get_element(col, row)) {
 				return false;
 			}
 		}
@@ -245,14 +227,14 @@ bool matrix::operator!=(const matrix& right) const
 
 vector matrix::operator*(const vector& v) const 
 {
+	if (col_count() != v.size()) {
+		throw std::logic_error("invalid dimensions!");
+	}
+
 	number_vector ret;
 
-	for (size_t i = 0; i < mat[0].size(); i++) {
-		number tmp;
-		for (size_t j = 0; j < mat.size(); j++) {
-			tmp = tmp + (mat[j][i] * v[j]);
-		}
-		ret.emplace_back(tmp);
+	for (size_t r = 0; r < row_count(); r++) {
+		ret.emplace_back(row(r) * v);
 	}
 
 	return vector(ret);
