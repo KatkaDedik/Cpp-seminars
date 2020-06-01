@@ -84,34 +84,37 @@ bool vector::operator!=(const vector& v) const {
 
 /*--------------------MATRIX--------------------*/
 
-matrix& matrix::gauss()
+number matrix::gauss_extended()
 {
+	number det(1);
 	size_t non_zero_col = 0;
 	for (size_t main_row = 0; main_row < row_count(); main_row++) {
 		
 
 		if (non_zero_col >= col_count()) {
-			return *this;
+			return number(0);
 		}
 
 		if (mat[main_row][non_zero_col] == 0) {
 			bool col_is_zero = true;
 			while (col_is_zero) {
-				for (size_t tmp_row = main_row + 1; tmp_row < row_count(); tmp_row++) {
+				for (size_t tmp_row = main_row; tmp_row < row_count(); tmp_row++) {
 					if (mat[tmp_row][non_zero_col] != 0) {
 						mat[main_row].get().swap(mat[tmp_row].get());
 						col_is_zero = false;
+						det.change_sgn();
 						non_zero_col--;
 						break;
 					}
 				}
 				non_zero_col++;
 				if (non_zero_col >= col_count()) {
-					return *this;
+					return number(0);
 				}
 			}
 		}
 		number denominator_tmp = mat[main_row][non_zero_col];
+		det = det * denominator_tmp;
 		for (size_t i = non_zero_col; i < col_count(); i++) {
 			mat[main_row][i] = mat[main_row][i] / denominator_tmp;
 		}
@@ -121,7 +124,7 @@ matrix& matrix::gauss()
 		}
 		non_zero_col++;
 	}
-	return *this;
+	return det;
 }
 
 int matrix::rank() const
@@ -139,15 +142,8 @@ int matrix::rank() const
 }
 
 number matrix::det() const {
-	std::vector<std::vector<const number*>> pseudo_matrix;
-	for (size_t row = 0; row < row_count(); row++) {
-		std::vector<const number*> tmp_vector;
-		for (size_t col = 0; col < col_count(); col++) {
-			tmp_vector.push_back(&(mat[row][col]));
-		}
-		pseudo_matrix.push_back(tmp_vector);
-	}
-	return determinant(pseudo_matrix);
+	matrix tmp = *this;
+	return tmp.gauss_extended();
 }
 
 matrix matrix::inv() const

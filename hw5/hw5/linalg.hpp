@@ -50,7 +50,13 @@ public:
 
 	explicit matrix(std::vector<vector> m) : mat(m) {}
 
-	matrix& gauss();
+	number gauss_extended();
+
+	matrix& gauss()
+	{
+		gauss_extended();
+		return *this;
+	}
 
 	int rank() const;
 
@@ -111,34 +117,5 @@ inline vector operator*(const number& num, const vector& v)
 {
     return v * num;
 }
-
-inline number determinant(const std::vector<std::vector<const number*>>& pseudo_matrix) {
-	if (pseudo_matrix.size() == 1) {
-		return *pseudo_matrix[0][0];
-	}
-
-	number det_sum(0);
-
-	for (size_t i = 0; i < pseudo_matrix.size(); i++) {
-		std::vector<std::vector<const number*>> tmp_matrix;
-		for (size_t j = 0; j < pseudo_matrix.size(); j++) {
-			if (j == i) continue;
-			std::vector<const number*> tmp_vector;
-			for (size_t k = 1; k < pseudo_matrix.size(); k++) {
-				tmp_vector.push_back(pseudo_matrix[j][k]);
-			}
-			tmp_matrix.push_back(tmp_vector);
-		}
-
-		if (i % 2 == 0) {
-			det_sum = det_sum + (*pseudo_matrix[i][0] * determinant(tmp_matrix));
-		}
-		else {
-			det_sum = det_sum - (*pseudo_matrix[i][0] * determinant(tmp_matrix));
-		}
-	}
-	return det_sum;
-}
-
 
 

@@ -92,8 +92,10 @@ public:
 
 	integer_number get_numerator() const { return numerator; }
 	integer_number get_denominator() const { return denominator; }
-private:
 
 	int cmp(const number& num) const;
 	number& abs();
+	void change_sgn() {
+		numerator.change_sign();
+	}
 };

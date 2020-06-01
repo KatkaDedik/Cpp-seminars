@@ -194,6 +194,13 @@ void rank() {
 }
 
 void determinant() {
+
+	//2x2 det = 0
+	vector row1(std::vector<number>{number(1), number(0)});
+	vector row2(std::vector<number>{number(0), number(0)});
+	matrix m0(std::vector<vector>{row1, row2});
+	assert(m0.det() == 0);
+
 	//2x2 det
 	vector row4(std::vector<number>{number(1), number(2)});
 	vector row5(std::vector<number>{number(2), number(1)});
@@ -223,6 +230,21 @@ void determinant() {
 	vector row17(std::vector<number>{number(2), number(3), number(6), number(6), number(6)});
 	matrix m4(std::vector<vector>{row13, row14, row15, row16, row17});
 	assert(m4.det() == -129);
+
+	//8x8
+	vector row18(std::vector<number>{number(3), number(3), number(3), number(3), number(2), number(6), number(1), number(1)});
+	vector row19(std::vector<number>{number(2), number(7), number(0), number(2), number(1), number(6), number(1), number(1)});
+	vector row20(std::vector<number>{number(4), number(3), number(3), number(1), number(0), number(6), number(1), number(1)});
+	vector row21(std::vector<number>{number(0), number(3), number(3), number(6), number(7), number(6), number(1), number(1)});
+	vector row22(std::vector<number>{number(2), number(3), number(6), number(6), number(6), number(6), number(1), number(1)});
+	vector row23(std::vector<number>{number(2), number(7), number(0), number(2), number(1), number(3), number(1), number(4)});
+	vector row24(std::vector<number>{number(4), number(3), number(3), number(1), number(0), number(6), number(9), number(1)});
+	vector row25(std::vector<number>{number(0), number(3), number(3), number(6), number(7), number(6), number(1), number(5)});
+
+	matrix m5(std::vector<vector>{row18, row19, row20, row21, row22, row23, row24, row25});
+	
+	matrix tmp = m5;
+	assert(m5.det() == 12384);
 }
 
 void inverse() {
