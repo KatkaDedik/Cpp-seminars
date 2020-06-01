@@ -388,4 +388,5 @@ int main(){
 	gauss_2();
 	col();
 	rank();
+	return 0;
 }

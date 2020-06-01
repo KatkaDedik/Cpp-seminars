@@ -1,0 +1,2 @@
+C:\Users\Laco\Documents\Visual Studio 2017\Projects\c++\hw5\Debug\hw5.exe
+C:\Users\Laco\Documents\Visual Studio 2017\Projects\c++\hw5\Debug\hw5.pdb
