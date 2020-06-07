@@ -101,7 +101,7 @@ matrix prime_extended(long seed, int rows, int cols, const std::vector<number> n
 }
 
 matrix subst_col(matrix mat, int col, const std::vector<number>& vec) {
-	for (int i = 0; i < mat.row_count(); i++) {
+	for (size_t i = 0; i < mat.row_count(); i++) {
 		mat.set_element(col, i, vec[i]);
 	}
 	return mat;
@@ -119,7 +119,7 @@ number composite(int i, int j) {
 /*mul_rows( mat, rf ) vynásobí každý øádek matice mat odpovídajícím èíslem z rf*/
 matrix mul_rows(const matrix& m, const std::vector< number >& rf) {
 	std::vector<vector> mat;
-	for (int i = 0; i < rf.size(); i++) {
+	for (size_t i = 0; i < rf.size(); i++) {
 		mat.emplace_back(m.row(i) * rf[i]);
 	}
 	return matrix(mat);
@@ -127,10 +127,36 @@ matrix mul_rows(const matrix& m, const std::vector< number >& rf) {
 
 number product(const std::vector< number >& rf) {
 	number ret(1);
-	for (int i = 0; i < rf.size(); i++) {
+	for (size_t i = 0; i < rf.size(); i++) {
 		ret = ret * rf[i];
 	}
 	return ret;
+}
+
+/*subst_row(mat, n, j, vec) nahradí j - tý øádek matice o n øádcích vektorem vec*/
+matrix subst_row(const matrix& mat, int n, int j, const vector& vec) {
+	std::vector<vector> m;
+	for (int i = 0; i < n; i++) {
+		if (i == j) {
+			m.emplace_back(vec);
+			continue;
+		}
+		m.emplace_back(mat.row(i));
+	}
+	return matrix(m);
+}
+
+/*basis(j, n) vytvoøí j - tý kanonický bázový vektor dimenze n*/
+vector basis(int j, int n) {
+	std::vector<number> v;
+	for (int i = 0; i < n; i++) {
+		if (i == j) {
+			v.emplace_back(1);
+			continue;
+		}
+		v.emplace_back(0);
+	}
+	return vector(v);
 }
 
 void number_test() {
@@ -775,47 +801,53 @@ void cramer() {
 
 	std::mt19937 r(727);
 
-	for(int n = 3; n < 8; n++){
-		for (int i = 3; i < 10; i++) {
-
+	for (int n = 2; n < 8; n++) {
+		for (int i = 4; i < 6; i++) {
 			long seed = r();
 
-			auto mat = transpose(prime_matrix(seed, n, n), n); // n = 4
+			auto mat = transpose(prime_matrix(seed, n, n), n);
 			auto nvec = prime_nvec(i, n);
 			auto vec = vector(nvec);
 			auto ext = prime_extended(seed, n, n, nvec);
 			auto det = mat.det();
-
-			std::vector<number> qxyz;
+			assert(det != 0);
+			ext.gauss();
+			auto sol = ext.col(n);
 			for (int j = 0; j < n; j++) {
-				qxyz.emplace_back(subst_col(mat, j, nvec).det() / det);
+				auto x = subst_row(mat, n, j, vec).det() / det;
+				auto bas = basis(j, n);
+				assert(sol * bas == x);
 			}
-
-			for (int j = 0; j < n; j++) {
-				number control(0);
-				for (int k = 0; k < n; k++) {
-					control = control + (mat.get_element(k, j) * qxyz[k]);
-				}
-				assert(control == nvec[j]);
-			}
-
 		}
 	}
 
-	//ext.gauss()
+	for(int n = 5; n < 8; n++){
+		
+		int i = n;
+		long seed = r();
 
-	/*matrix m = prime_matrix(469384, 4, 4);
-	m.print();
+		auto mat = transpose(prime_matrix(seed, n, n), n); // n = 4
+		auto nvec = prime_nvec(i, n);
+		auto vec = vector(nvec);
+		auto ext = prime_extended(seed, n, n, nvec);
+		auto det = mat.det();
 
-	auto nvec = prime_nvec(69, 4);
-	auto ext = prime_extended(469384, 4, 4, nvec);
-	ext.print();*/
+		std::vector<number> qxyz;
+		for (int j = 0; j < n; j++) {
+			qxyz.emplace_back(subst_col(mat, j, nvec).det() / det);
+		}
 
-
+		for (int j = 0; j < n; j++) {
+			number control(0);
+			for (int k = 0; k < n; k++) {
+				control = control + (mat.get_element(k, j) * qxyz[k]);
+			}
+			assert(control == nvec[j]);
+		}
+	}
 
 	using nv = std::vector< number >;
 	using vv = std::vector< vector >;
-
 
 	{
 		vector row10(std::vector<number>{number(6), number(1), number(1)});
@@ -843,7 +875,7 @@ void det() {
 
 	int i = 5;
 	for (int n = 3; n < 9; n++) {
-		for (int i = 4; i < 8; i++) {
+		for (int i = 4; i < 6; i++) {
 			auto m_1 = prime_matrix(i, n, n);			// n = 3 
 			std::vector< number > rf;
 			for (int j = 0; j < n; j++) {
@@ -859,8 +891,8 @@ void inv_verity() {
 
 	std::mt19937 r(727);
 
-	for (int n = 3; n < 9; n++) {
-		for (int i = 0; i < 10; i++) {
+	for (int n = 4; n < 9; n++) {
+		for (int i = n; i < 9; i++) {
 
 			long seed = r();
 
@@ -868,9 +900,9 @@ void inv_verity() {
 			auto vec = prime_vector(seed, n);
 			auto inv = mat.inv();
 			assert(mat.det() * inv.det() == 1);
+			assert(mat * (inv * vec) == vec);
 		}
 	}
-
 }
 
 void rank_verity() {
@@ -893,13 +925,14 @@ void rank_verity() {
 }
 
 void verity() {
+	inv_verity();
 	cramer();
 	det();
-	inv_verity();
 	rank_verity();
 }
 
 int main() {
+	verity();
 	number_test();
 	sanity();
 	simple_vector();
@@ -909,6 +942,6 @@ int main() {
 	gauss_2();
 	col();
 	rank();
-	verity();
+	
 	return 0;
 }
