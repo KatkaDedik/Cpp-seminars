@@ -18,10 +18,11 @@ class integer_number {
 public:
 	integer_number() = default;
 	integer_number(int num) {
-		data.push_back(std::abs(num));
+		data.emplace_back(std::abs(num));
 		sign = num < 0;
 	}
 	integer_number(std::vector<uint32_t> v, bool s) : data(v), sign(s) {}
+	integer_number(const integer_number& num) = default;
 
 	bool sgn() const { return sign; }
 	size_t size()const { return data.size(); }
@@ -71,6 +72,7 @@ public:
 	number(integer_number n, integer_number d) : numerator(n), denominator(d) {}
 	number(int value) : numerator(value) {}
 	number() : numerator(0) {}
+	number(const number& n) = default;
 
 	number operator+(const number& num) const;
 	number operator-(const number& num) const;

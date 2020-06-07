@@ -43,7 +43,7 @@ vector vector::operator*(const matrix& mat) const {
 	for (size_t col = 0; col < mat.col_count(); col++) {
 		number tmp;
 		for (size_t row = 0; row < mat.row_count(); row++) {
-			tmp = tmp + (mat.get_element(row, col) * u[row]);
+			tmp = tmp + (mat.get_element(col, row) * u[row]);
 		}
 		ret.emplace_back(tmp);
 	}
@@ -192,7 +192,7 @@ matrix matrix::operator+(const matrix& right) const
 
 	for (size_t row = 0; row < row_count(); row++) {
 		for (size_t col = 0; col < col_count(); col++) {
-			ret.set_element(row, col, mat[row][col] + right.get_element(row, col));
+			ret.set_element(col, row, mat[row][col] + right.get_element(col, row));
 		}
 	}
 

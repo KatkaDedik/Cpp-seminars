@@ -3,6 +3,11 @@
 /*---------------------------NO MEMBRE FUNCTIONS---------------------------*/
 
 void remove_zeros(std::vector<uint32_t>& data) {
+
+	if (data.size() == 0) {
+		data.emplace_back(0);
+	}
+
 	for (size_t i = data.size() - 1; i > 0; --i) {
 		if (data[i] != 0) {
 			break;
@@ -23,7 +28,7 @@ std::vector<uint32_t> add(const integer_number& first, const integer_number& sec
 
 		uint64_t value = left + right + carry;
 
-		ret.push_back(value & 0xffffffff);
+		ret.emplace_back(value & 0xffffffff);
 		carry = value >> 32;
 		index++;
 	}
@@ -41,7 +46,7 @@ std::vector<uint32_t> subtract(const integer_number& first, const integer_number
 		uint64_t right = second.get(index + offset);
 		uint64_t value = (left | 0x100000000) - (right + carry);
 
-		ret.push_back(value & 0xffffffff);
+		ret.emplace_back(value & 0xffffffff);
 		carry = !(value >> 32);
 		index++;
 	}
@@ -101,16 +106,16 @@ integer_number integer_number::multiply(uint64_t right, size_t offset) const {
 	uint64_t overflow = 0;
 
 	for (size_t i = 0; i < offset; i++) {
-		ret.push_back(0);
+		ret.emplace_back(0);
 	}
 
 	for (uint64_t left : data) {
 		uint64_t value = left * right + overflow;
 		overflow = value >> 32;
-		ret.push_back(value & 0xffffffff);
+		ret.emplace_back(value & 0xffffffff);
 	}
 	if (overflow > 0) {
-		ret.push_back(overflow & 0xffffffff);
+		ret.emplace_back(overflow & 0xffffffff);
 	}
 	return integer_number(ret, false);
 }
@@ -129,7 +134,7 @@ integer_number integer_number::devide(const uint32_t& denominator, int offset) c
 
 		remainder |= data[i];
 		uint64_t tmp = remainder / denominator64;
-		ret.push_back(static_cast<uint32_t>(tmp & 0xffffffff));
+		ret.emplace_back(static_cast<uint32_t>(tmp & 0xffffffff));
 		remainder = (remainder % denominator64) << 32;
 	}
 	std::reverse(std::begin(ret), std::end(ret));
@@ -162,7 +167,7 @@ std::tuple<integer_number, integer_number> integer_number::devide_mod(const inte
 		if (!upper_remainder.sgn()) {
 
 			numerator_upper_elements = upper_remainder;
-			ret.push_back(upper_guess);
+			ret.emplace_back(upper_guess);
 
 		}
 		else {
@@ -195,10 +200,13 @@ std::tuple<integer_number, integer_number> integer_number::devide_mod(const inte
 			}
 
 			numerator_upper_elements = lower_remainder;
-			ret.push_back(lower_guess);
+			ret.emplace_back(lower_guess);
 		}
 	}
 
+	if (ret.size() == 0) {
+		ret.emplace_back(0);
+	}
 
 	std::reverse(std::begin(ret), std::end(ret));
 	remove_zeros(ret);
@@ -351,11 +359,14 @@ number number::operator-()
 
 number number::operator*(const number& num) const
 {
-	if (num == number(0)) {
+	if (num == number(0) || *this == 0) {
 		return number(0);
 	}
 	if (num == number(1)) {
 		return *this;
+	}
+	if (*this == 1) {
+		return num;
 	}
 
 	number ret(numerator * num.get_numerator(), denominator * num.get_denominator());
