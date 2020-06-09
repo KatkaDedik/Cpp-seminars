@@ -41,7 +41,7 @@ class matrix {
 public:
   matrix(int columns, int rows) {
     for (int i = 0; i < rows; i++) {
-      mat.emplace_back(vector(columns));
+      mat.emplace_back(columns);
     }
   }
   explicit matrix(std::vector<vector> m) : mat(m) {}

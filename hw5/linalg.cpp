@@ -4,7 +4,7 @@
 
 vector vector::operator+(const vector &v) const {
   if (u.size() != v.size()) {
-    return *this;
+    throw std::logic_error("invalid dimensions!");
   }
   number_vector w;
   for (size_t i = 0; i < u.size(); i++) {
@@ -15,7 +15,7 @@ vector vector::operator+(const vector &v) const {
 
 vector vector::operator-(const vector &v) const {
   if (u.size() != v.size()) {
-    return vector(0);
+      throw std::logic_error("invalid dimensions!");
   }
   number_vector w;
   for (size_t i = 0; i < u.size(); i++) {
@@ -34,7 +34,7 @@ vector vector::operator*(const number &scalar) const {
 
 number vector::operator*(const vector &v) const {
   if (u.size() != v.size()) {
-    return 0;
+    throw std::logic_error("invalid dimensions!");
   }
   number dot = 0;
   for (size_t i = 0; i < u.size(); i++) {
@@ -44,6 +44,11 @@ number vector::operator*(const vector &v) const {
 }
 
 vector vector::operator*(const matrix &mat) const {
+  
+    if (u.size() != mat.row_count()) {
+        throw std::logic_error("invalid dimensions!");
+    }
+
   number_vector ret;
 
   for (size_t col = 0; col < mat.col_count(); col++) {
@@ -58,25 +63,13 @@ vector vector::operator*(const matrix &mat) const {
 }
 
 bool vector::operator==(const vector &v) const {
-  if (u.size() != v.size())
+  
+  if (u.size() != v.size()) {
     return false;
-
-  size_t j = 0;
-  while (j != u.size() && v[j] == 0) {
-    if (u[j] != 0) {
-      return false;
-    }
-    j++;
   }
-
-  if (j == u.size()) {
-    return true;
-  }
-
-  vector v_tmp = v * (u[j] / v[j]);
 
   for (size_t i = 0; i < u.size(); i++) {
-    if (u[i] != v_tmp[i]) {
+    if (u[i] != v[i]) {
       return false;
     }
   }
@@ -144,12 +137,17 @@ int matrix::rank() const {
 }
 
 number matrix::det() const {
+  if (mat.size() != mat[0].size()) {
+    throw std::logic_error("non - square matrix!");
+  }
   matrix tmp = *this;
   return tmp.gauss_extended();
 }
 
 matrix matrix::inv() const {
-
+  if (mat.size() != mat[0].size()) {
+    throw std::logic_error("non - square matrix!");
+  }
   if (row_count() != col_count()) {
     return *this;
   }
@@ -184,6 +182,11 @@ vector matrix::col(int n) const {
 }
 
 matrix matrix::operator+(const matrix &right) const {
+  
+  if (mat.size() != right.row_count() ||mat[0].size() != right.col_count()) {
+    throw std::logic_error("invalid dimensions!!");
+  }
+    
   matrix ret(col_count(), row_count());
 
   for (size_t row = 0; row < row_count(); row++) {

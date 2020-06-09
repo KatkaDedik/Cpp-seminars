@@ -230,7 +230,6 @@ void simple_vector() {
   assert((n * u) == 0);
   assert((w * u) == 2);
   assert((w * n) == 0);
-  assert(u == v);
 
   using nv = std::vector<number>;
 
@@ -1048,16 +1047,16 @@ void verity() {
 }
 
 int main() {
-  verity();
+  simple_vector();
+  mul();
   number_test();
   sanity();
-  simple_vector();
   gauss();
   inverse();
   determinant();
   gauss_2();
   col();
   rank();
-
+  verity();
   return 0;
 }
